@@ -14,7 +14,7 @@ A searchable, interactive dashboard for indexing publicly available geological d
 
 GeoIndex compiles geological survey data from public sources (USGS assessments, national petroleum authorities, operator disclosures) into a single searchable interface. The current dataset covers **24 sedimentary basins** across **7 countries**: Kenya, Tanzania, Mozambique, Ethiopia, Somalia, Eritrea, and Rwanda.
 
-For each basin, the app tracks:
+For each **basin**, the app tracks:
 
 - **Probabilistic resource estimates** — P90/P50/P10 for recoverable oil (MMBO) and gas (Tcf)
 - **Geological metadata** — basin type, key formations, play types, depth ranges
