@@ -5,7 +5,8 @@ var CAT_CLR = {
   Discovery: "#fbbf24",
   Development: "#34d399",
   Infrastructure: "#60a5fa",
-  Policy: "#a78bfa"
+  Policy: "#a78bfa",
+  Corporate: "#f472b6"
 };
 
 var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

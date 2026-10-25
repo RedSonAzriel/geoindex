@@ -146,23 +146,51 @@ async function fetchOne(feed) {
   return res;
 }
 
+var STOP = { the: 1, and: 1, for: 1, with: 1, from: 1, after: 1, over: 1, new: 1, its: 1, are: 1, has: 1, will: 1, into: 1, amid: 1 };
+
+function titleTokens(title) {
+  var words = title.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/);
+  var set = {};
+  var size = 0;
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i];
+    if (w.length > 2 && !STOP[w] && !set[w]) { set[w] = 1; size++; }
+  }
+  return { set: set, size: size };
+}
+
+// Two headlines count as the same story when they share most of their significant words.
+function similarTitles(a, b) {
+  if (!a.size || !b.size) return false;
+  var inter = 0;
+  for (var k in a.set) { if (b.set[k]) inter++; }
+  var jaccard = inter / (a.size + b.size - inter);
+  var overlap = inter / Math.min(a.size, b.size);
+  return jaccard >= 0.55 || (overlap >= 0.8 && inter >= 5);
+}
+
 function build(results) {
   var cutoff = Date.now() - cfg.maxAgeDays * 86400000;
-  var seen = {};
-  var items = [];
+  var cands = [];
   results.forEach(function (r) {
     r.raw.forEach(function (raw) {
       if (raw.date.getTime() < cutoff) return;
-      var key = raw.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 80);
-      if (seen[key]) return;
       var note = toNote(raw);
-      if (!note) return;
-      seen[key] = true;
-      items.push(note);
+      if (note) cands.push(note);
     });
   });
-  items.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
-  return items.slice(0, cfg.maxItems);
+  cands.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  var kept = [];
+  var keptTok = [];
+  for (var i = 0; i < cands.length; i++) {
+    var t = titleTokens(cands[i].title);
+    var dup = false;
+    for (var j = 0; j < keptTok.length; j++) {
+      if (similarTitles(t, keptTok[j])) { dup = true; break; }
+    }
+    if (!dup) { kept.push(cands[i]); keptTok.push(t); }
+  }
+  return kept.slice(0, cfg.maxItems);
 }
 
 function refresh() {
@@ -225,4 +253,4 @@ function handleHealth(req, res) {
   });
 }
 
-module.exports = { start: start, refresh: refresh, handleFieldIntel: handleFieldIntel, handleHealth: handleHealth, parseFeed: parseFeed, toNote: toNote };
+module.exports = { start: start, refresh: refresh, handleFieldIntel: handleFieldIntel, handleHealth: handleHealth, parseFeed: parseFeed, toNote: toNote, build: build };

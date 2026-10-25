@@ -1,7 +1,7 @@
 // Field Notes seed data. Entries are short summaries of widely reported Africa E&P events.
 // Seed content for layout and testing: verify figures and dates against primary sources.
 
-export var NOTE_CATEGORIES = ["All", "Discovery", "Development", "Infrastructure", "Policy"];
+export var NOTE_CATEGORIES = ["All", "Discovery", "Development", "Corporate", "Infrastructure", "Policy"];
 
 export var FIELD_NOTES = [
   {

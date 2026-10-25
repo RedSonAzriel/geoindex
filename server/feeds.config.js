@@ -59,8 +59,9 @@ module.exports = {
 
   // First matching category wins; anything unmatched is "Development".
   categoryKeywords: [
-    ['Discovery', ['discover', 'spud', 'well result', 'appraisal well', 'oil show', 'finds oil', 'finds gas', 'strikes']],
+    ['Discovery', ['discover', 'spud', 'well result', 'appraisal well', 'oil show', 'finds oil', 'finds gas', 'strikes oil', 'strikes gas']],
+    ['Corporate', ['exits', 'exit ', 'acquir', 'acquisition', 'farm-in', 'farm in', 'farm-out', 'farmout', 'stake', 'divest', 'merger', 'takeover', 'raises', 'funding', 'financing', 'ipo', 'shares', 'buys ', 'sells ', 'loan']],
     ['Infrastructure', ['pipeline', 'terminal', 'refinery', 'port ', 'power plant', 'storage', 'eacop', 'jetty', 'railway']],
-    ['Policy', ['licen', 'bid round', 'block auction', 'regulation', 'law', 'tax', 'agreement', 'mou', 'minister', 'parliament', 'government', 'ban ']]
+    ['Policy', ['licen', 'bid round', 'block auction', 'regulat', 'law', 'tax', 'agreement', 'mou', 'minister', 'parliament', 'government', 'govt', 'authority', 'local content', 'trade name', 'public views', 'policy', 'cabinet', 'bill ', 'ban ']]
   ]
 };
