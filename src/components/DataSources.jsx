@@ -44,6 +44,14 @@ var DATASETS = [
     caveat: "Outcomes are normalised by hand from the source wording, and one duplicate row in the source is omitted. No coordinates, and wells after 2017 are not included. Verify rows against the original PDF."
   },
   {
+    name: "Tanzania Block 2 discoveries",
+    status: "Reference",
+    records: "8 wells",
+    where: "OFS Metrics (Tanzania Block 2)",
+    origin: "Equinor news archive and Offshore magazine announcements, linked on each row.",
+    caveat: "Gas in place as announced, not reserves. Some dates come from the page address, not the article text. Block 1/4 and other Tanzanian wells are not yet included."
+  },
+  {
     name: "OFS spending",
     status: "Placeholder",
     records: "18 records",
