@@ -36,6 +36,14 @@ var DATASETS = [
     caveat: "Operators and years are approximate and not yet checked well by well."
   },
   {
+    name: "Kenya well record",
+    status: "Reference",
+    records: "86 wells, 1960 to 2017",
+    where: "OFS Metrics (Kenya well record)",
+    origin: "Transcribed from the National Oil Corporation of Kenya \"Wells Drilled\" table.",
+    caveat: "Outcomes are normalised by hand from the source wording, and one duplicate row in the source is omitted. No coordinates, and wells after 2017 are not included. Verify rows against the original PDF."
+  },
+  {
     name: "OFS spending",
     status: "Placeholder",
     records: "18 records",

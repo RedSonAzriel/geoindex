@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { OFS_WELLS, OFS_SPENDING, OFS_CATEGORIES } from "../data/ofsMetrics";
+import WellResults from "./WellResults";
 
 var CAT_CLR = { Drilling: "#34d399", Seismic: "#60a5fa", Development: "#fbbf24", Facilities: "#a78bfa" };
 
@@ -229,6 +230,7 @@ export default function OFSMetrics() {
           </div>
         )}
       </div>
+      <WellResults />
     </div>
   );
 }
