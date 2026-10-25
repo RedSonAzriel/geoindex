@@ -52,6 +52,14 @@ var DATASETS = [
     caveat: "Gas in place as announced, not reserves. Some dates come from the page address, not the article text. Block 1/4 and other Tanzanian wells are not yet included."
   },
   {
+    name: "Rovuma Basin gas discoveries",
+    status: "Reference",
+    records: "11 wells",
+    where: "OFS Metrics (Rovuma Basin)",
+    origin: "Operator press releases (Eni) and trade-press articles (OGJ, Offshore magazine, AAPG Explorer), linked on each row.",
+    caveat: "Gas in place and gross recoverable volumes use different bases and must not be added. Some dates have no year in the source. Windjammer, Lagosta, Golfinho, Coral and others are not yet included."
+  },
+  {
     name: "OFS spending",
     status: "Placeholder",
     records: "18 records",
