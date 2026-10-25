@@ -114,7 +114,9 @@ function toNote(raw) {
     detail: '',
     source: raw.source,
     url: raw.link,
-    live: true
+    live: true,
+    sourceCount: 1,
+    others: []
   };
 }
 
@@ -169,6 +171,16 @@ function similarTitles(a, b) {
   return jaccard >= 0.55 || (overlap >= 0.8 && inter >= 5);
 }
 
+// Record another outlet covering the same story (one entry per distinct outlet, capped to keep the payload small).
+function noteOutlet(base, extra) {
+  if (!extra.source || extra.source === base.source) return;
+  for (var k = 0; k < base.others.length; k++) {
+    if (base.others[k].source === extra.source) return;
+  }
+  if (base.others.length < 8) base.others.push({ source: extra.source, url: extra.url });
+  base.sourceCount = 1 + base.others.length;
+}
+
 function build(results) {
   var cutoff = Date.now() - cfg.maxAgeDays * 86400000;
   var cands = [];
@@ -186,7 +198,7 @@ function build(results) {
     var t = titleTokens(cands[i].title);
     var dup = false;
     for (var j = 0; j < keptTok.length; j++) {
-      if (similarTitles(t, keptTok[j])) { dup = true; break; }
+      if (similarTitles(t, keptTok[j])) { dup = true; noteOutlet(kept[j], cands[i]); break; }
     }
     if (!dup) { kept.push(cands[i]); keptTok.push(t); }
   }

@@ -37,6 +37,7 @@ var ST = {
   card: { background: "#0c1322", border: "1px solid #1a2338", borderRadius: 12, padding: "14px 16px", cursor: "pointer" },
   top: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" },
   date: { fontSize: 11, color: "#475569", marginLeft: "auto" },
+  badge: { fontSize: 10, fontWeight: 600, color: "#34d399", background: "#34d3991f", padding: "2px 8px", borderRadius: 4 },
   title: { fontSize: 14, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.35 },
   summary: { fontSize: 12.5, color: "#94a3b8", marginTop: 5, lineHeight: 1.5 },
   detail: { fontSize: 12.5, color: "#cbd5e1", marginTop: 10, paddingTop: 10, borderTop: "1px solid #1a2338", lineHeight: 1.55 },
@@ -167,6 +168,7 @@ export default function FieldNotes() {
             <div style={ST.top}>
               <span style={pillStyle(CAT_CLR[n.category] || "#94a3b8")}>{n.category}</span>
               <span style={{ fontSize: 11, color: "#94a3b8" }}>{n.country}</span>
+              {n.sourceCount > 1 && <span style={ST.badge}>{n.sourceCount} outlets</span>}
               <span style={ST.date}>{fmtDate(n.date)}</span>
             </div>
             <div style={ST.title}>{n.title}</div>
@@ -176,6 +178,19 @@ export default function FieldNotes() {
                 {n.detail && <div style={ST.detail}>{n.detail}</div>}
                 <div style={ST.meta}>
                   {n.basin ? "Basin: " + n.basin + " · " : ""}Source: {n.source}
+                  {n.others && n.others.length > 0 && (
+                    <span>
+                      {" · Also reported by: "}
+                      {n.others.map(function (o, i) {
+                        return (
+                          <span key={o.url}>
+                            {i > 0 ? ", " : ""}
+                            <a href={o.url} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>{o.source || "source"}</a>
+                          </span>
+                        );
+                      })}
+                    </span>
+                  )}
                   {n.url && (
                     <span>
                       {" · "}
