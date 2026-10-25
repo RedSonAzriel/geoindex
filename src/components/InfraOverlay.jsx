@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-import { INFRA, INFRA_LAYERS, readinessScore } from "../data/infrastructure";
+import { INFRA_LAYERS, readinessScore } from "../data/infrastructure";
 
 function layerDef(id) {
   for (var i = 0; i < INFRA_LAYERS.length; i++) {
@@ -8,68 +7,13 @@ function layerDef(id) {
   return null;
 }
 
-function tipHtml(name, sub) {
-  return '<div style="font-family:Inter,sans-serif;font-size:12px;line-height:1.4;"><strong style="color:#1e293b;">' + name + '</strong>' +
-    (sub ? '<br/><span style="color:#475569;">' + sub + '</span>' : '') + '</div>';
-}
-
-// Draws one infrastructure layer on the Leaflet map held in mapRef. Call after the map init effect.
-export function useInfraLayer(mapRef, activeLayer, leafletReady) {
-  var groupRef = useRef(null);
-  useEffect(function () {
-    var map = mapRef.current;
-    var L = window.L;
-    if (!leafletReady || !map || !L) return undefined;
-    if (groupRef.current) {
-      try { map.removeLayer(groupRef.current); } catch (e) { /* map already gone */ }
-      groupRef.current = null;
-    }
-    var def = layerDef(activeLayer);
-    if (!def || !INFRA[activeLayer]) return undefined;
-    var group = L.layerGroup();
-    var list = INFRA[activeLayer];
-    for (var i = 0; i < list.length; i++) {
-      var it = list[i];
-      if (it.pos) {
-        var dot = L.circleMarker(it.pos, {
-          radius: activeLayer === "ports" ? 6 : 5,
-          fillColor: def.color,
-          color: "#0b1120",
-          weight: 1.5,
-          opacity: 1,
-          fillOpacity: 0.9
-        });
-        dot.bindTooltip(tipHtml(it.name, it.country), { direction: "top", className: "geo-tooltip" });
-        dot.addTo(group);
-      } else {
-        var planned = it.status && it.status !== "Operating";
-        var line = L.polyline(it.pts, {
-          color: def.color,
-          weight: activeLayer === "power" ? 2 : 3,
-          opacity: 0.85,
-          dashArray: planned ? "6,6" : null,
-          interactive: false
-        });
-        line.addTo(group);
-      }
-    }
-    group.addTo(map);
-    groupRef.current = group;
-    return function () {
-      if (groupRef.current) {
-        try { map.removeLayer(groupRef.current); } catch (e) { /* map already gone */ }
-        groupRef.current = null;
-      }
-    };
-  }, [activeLayer, leafletReady]);
-}
-
 var SEL = { background: "#111b2e", border: "1px solid #1e2d45", color: "#94a3b8", padding: "5px 10px", borderRadius: 8, fontSize: 11, fontFamily: "inherit", cursor: "pointer", outline: "none" };
 
 export function InfraSelect(props) {
   return (
     <select value={props.value} onChange={function (e) { props.onChange(e.target.value); }} style={SEL} title="Infrastructure layer">
       <option value="none" style={{ background: "#0f172a" }}>Infrastructure: none</option>
+      <option value="all" style={{ background: "#0f172a" }}>All infrastructure</option>
       {INFRA_LAYERS.map(function (l) {
         return <option key={l.id} value={l.id} style={{ background: "#0f172a" }}>{l.label}</option>;
       })}
@@ -78,6 +22,22 @@ export function InfraSelect(props) {
 }
 
 export function InfraLegend(props) {
+  if (props.activeLayer === "all") {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "8px 18px", borderTop: "1px solid #1a2338", flexWrap: "wrap" }}>
+        {INFRA_LAYERS.map(function (l) {
+          return (
+            <span key={l.id} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#94a3b8" }}>
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 4, background: l.color }}></span>
+              {l.label}
+            </span>
+          );
+        })}
+        <span style={{ fontSize: 10, color: "#475569" }}>dashed = planned or proposed</span>
+        <span style={{ fontSize: 10, color: "#475569", marginLeft: "auto" }}>Approximate and schematic. Verify before use.</span>
+      </div>
+    );
+  }
   var def = layerDef(props.activeLayer);
   if (!def) return null;
   var isLine = props.activeLayer !== "ports" && props.activeLayer !== "airports";
