@@ -269,7 +269,7 @@ function MapPanel({data,sel,onSel,height}) {
         }
         .leaflet-control-attribution a { color: #64748b !important; }
       `}</style>
-      <div ref={mapContainer} style={{width:'100%', height:height||520, borderRadius:'0 0 12px 12px', background:'#0b1120'}} />
+      <div ref={mapContainer} style={{width:'100%', height:height||520, isolation:'isolate', position:'relative', zIndex:0, borderRadius:'0 0 12px 12px', background:'#0b1120'}} />
       <div style={S.legendRow}>
         {Object.entries(STATUS_CLR).map(([s,c])=>(
           <div key={s} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -503,7 +503,7 @@ const S={
   pill:{fontSize:10,fontWeight:600,padding:"3px 9px",borderRadius:6,display:"inline-block"},
 
   // drawer
-  drawer:{position:"fixed",top:0,right:0,bottom:0,width:420,background:"#0c1322",borderLeft:"1px solid #1a2338",zIndex:200,overflowY:"auto",animation:"slideIn .22s ease-out",boxShadow:"-12px 0 40px rgba(0,0,0,.5)"},
+  drawer:{position:"fixed",top:0,right:0,bottom:0,width:420,background:"#0c1322",borderLeft:"1px solid #1a2338",zIndex:2000,overflowY:"auto",animation:"slideIn .22s ease-out",boxShadow:"-12px 0 40px rgba(0,0,0,.5)"},
   drawerInner:{padding:26},
   xBtn:{background:"#111b2e",border:"1px solid #1e2d45",borderRadius:8,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"},
 
