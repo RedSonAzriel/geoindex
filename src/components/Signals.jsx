@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 // Fetches per-basin news signals computed by the server from the live feed.
 export function useFieldSignals() {
-  var st = useState({ signals: {}, windowDays: 120, ready: false });
+  var st = useState({ signals: {}, items: [], windowDays: 120, ready: false });
   var data = st[0];
   var setData = st[1];
   useEffect(function () {
@@ -10,7 +10,7 @@ export function useFieldSignals() {
     fetch("/api/field-intel")
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        if (!dead) setData({ signals: j.signals || {}, windowDays: j.windowDays || 120, ready: true });
+        if (!dead) setData({ signals: j.signals || {}, items: j.items || [], windowDays: j.windowDays || 120, ready: true });
       })
       .catch(function () {});
     return function () { dead = true; };

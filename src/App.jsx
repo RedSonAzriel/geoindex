@@ -3,6 +3,7 @@ import FieldNotes from "./components/FieldNotes";
 import OFSMetrics from "./components/OFSMetrics";
 import DataSources from "./components/DataSources";
 import { useWatchlist, Star } from "./components/Watchlist";
+import { Dashboard, Library } from "./components/Pages";
 import { useFieldSignals, SignalBadge, SignalPanel } from "./components/Signals";
 import { useInfraLayer, InfraLegend, InfraSelect, DevReadiness } from "./components/InfraOverlay";
 
@@ -123,7 +124,7 @@ function KPIs({data}) {
 }
 
 // ── MAP (Leaflet-based with real terrain tiles)
-function MapPanel({data,sel,onSel}) {
+function MapPanel({data,sel,onSel,height}) {
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -268,7 +269,7 @@ function MapPanel({data,sel,onSel}) {
         }
         .leaflet-control-attribution a { color: #64748b !important; }
       `}</style>
-      <div ref={mapContainer} style={{width:'100%', height:520, borderRadius:'0 0 12px 12px', background:'#0b1120'}} />
+      <div ref={mapContainer} style={{width:'100%', height:height||520, borderRadius:'0 0 12px 12px', background:'#0b1120'}} />
       <div style={S.legendRow}>
         {Object.entries(STATUS_CLR).map(([s,c])=>(
           <div key={s} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -431,11 +432,10 @@ export default function App() {
         <div style={S.body}>{page==="notes"?<FieldNotes/>:page==="ofs"?<OFSMetrics/>:<DataSources/>}</div>
         ):(
         <div style={S.body}>
-          <KPIs data={filtered}/>
-          <div style={S.grid2}>
-            <MapPanel data={filtered} sel={sel} onSel={setSel}/>
-            <Table data={filtered} sel={sel} onSel={setSel} sig={sig} wl={wl}/>
-          </div>
+          {page==="dash"&&<KPIs data={filtered}/>}
+          {page==="dash"&&<Dashboard data={filtered} all={BASINS} sig={sig} wl={wl} onSel={setSel}/>}
+          {page==="map"&&<MapPanel data={filtered} sel={sel} onSel={setSel} height="calc(100vh - 220px)"/>}
+          {page==="lib"&&<Library data={filtered} sel={sel} onSel={setSel} sig={sig} wl={wl}/>}
         </div>
         )}
       </main>
