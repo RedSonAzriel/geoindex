@@ -1,4 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import FieldNotes from "./components/FieldNotes";
+import OFSMetrics from "./components/OFSMetrics";
+import { useInfraLayer, InfraLegend, InfraSelect, DevReadiness } from "./components/InfraOverlay";
 
 const BASINS = [
   { id:"lamu", name:"Lamu Basin", country:"Kenya", type:"Passive Margin", status:"Exploration", area_km2:86000, depth_m:[2000,6000], formations:["Jurassic carbonates","Cretaceous clastics","Paleogene deepwater"], plays:["Deepwater turbidite","Carbonate platform"], estimated_oil_mmbo:{p90:200,p50:680,p10:1800}, estimated_gas_tcf:{p90:5,p50:12.4,p10:28}, wells_drilled:14, discovery_year:null, lat:-1.8, lng:41.2, source:"USGS 2012; Kenya Geological Survey", notes:"Offshore deepwater frontier. Multiple leads via 2D/3D seismic." },
@@ -43,8 +46,20 @@ const NAV_ITEMS = [
   {id:"dash",label:"Dashboard",icon:<Ico sz={17} c="inherit"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></Ico>},
   {id:"map",label:"Basin Map",icon:<Ico sz={17} c="inherit"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></Ico>},
   {id:"lib",label:"Data Library",icon:<Ico sz={17} c="inherit"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></Ico>},
+  {id:"notes",label:"Field Notes",icon:<Ico sz={17} c="inherit"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></Ico>},
+  {id:"ofs",label:"OFS Metrics",icon:<Ico sz={17} c="inherit"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></Ico>},
   {id:"fore",label:"Forecasts",icon:<Ico sz={17} c="inherit"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Ico>,soon:true},
 ];
+
+// ── PAGE META
+const PAGE_META = {
+  dash:{title:"Dashboard",crumb:"Overview \u00B7 East Africa & Horn of Africa Region"},
+  map:{title:"Basin Map",crumb:"Basins \u00B7 East Africa & Horn of Africa Region"},
+  lib:{title:"Data Library",crumb:"Reference data \u00B7 East Africa & Horn of Africa Region"},
+  notes:{title:"Field Notes",crumb:"Curated E&P news \u00B7 East Africa & Horn of Africa Region"},
+  ofs:{title:"OFS Metrics",crumb:"Wells and spending \u00B7 East Africa & Horn of Africa Region"},
+  fore:{title:"Forecasts",crumb:"Coming soon"}
+};
 
 // ── SIDEBAR
 function Sidebar({active,onNav}) {
@@ -153,6 +168,10 @@ function MapPanel({data,sel,onSel}) {
     return () => { map.remove(); mapRef.current = null; };
   }, [leafletReady]);
 
+  // Infrastructure overlay (must come after the map init effect)
+  const [infraLayer,setInfraLayer]=useState("none");
+  useInfraLayer(mapRef, infraLayer, leafletReady);
+
   // Update markers when data or selection changes
   useEffect(() => {
     if (!mapRef.current || !window.L) return;
@@ -215,7 +234,7 @@ function MapPanel({data,sel,onSel}) {
 
   return (
     <div style={S.card}>
-      <div style={S.cardHead}><span style={S.cardLabel}>Basin Map</span><span style={S.cardBadge}>{data.length} results</span></div>
+      <div style={S.cardHead}><span style={S.cardLabel}>Basin Map</span><div style={{display:"flex",alignItems:"center",gap:8}}><InfraSelect value={infraLayer} onChange={setInfraLayer}/><span style={S.cardBadge}>{data.length} results</span></div></div>
       <style>{`
         .geo-tooltip {
           background: rgba(15,23,42,0.92) !important;
@@ -253,6 +272,7 @@ function MapPanel({data,sel,onSel}) {
           </div>
         ))}
       </div>
+      <InfraLegend activeLayer={infraLayer}/>
     </div>
   );
 }
@@ -334,6 +354,7 @@ function Drawer({basin:b,onClose}) {
           <Bar label="Recoverable Oil" p90={b.estimated_oil_mmbo.p90} p50={b.estimated_oil_mmbo.p50} p10={b.estimated_oil_mmbo.p10} unit="MMBO" accent="#fbbf24"/>
           <Bar label="Recoverable Gas" p90={b.estimated_gas_tcf.p90} p50={b.estimated_gas_tcf.p50} p10={b.estimated_gas_tcf.p10} unit="Tcf" accent="#60a5fa"/>
         </div>
+        <DevReadiness basin={b}/>
         <div style={{marginBottom:14}}>
           <div style={S.secTitle}>Key Formations</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:5}}>{b.formations.map(f=><span key={f} style={S.tag}>{f}</span>)}</div>
@@ -381,19 +402,22 @@ export default function App() {
         {/* Top bar */}
         <header style={S.header}>
           <div style={S.headerLeft}>
-            <h1 style={S.pageTitle}>Dashboard</h1>
-            <span style={S.breadcrumb}>Overview · East Africa & Horn of Africa Region</span>
+            <h1 style={S.pageTitle}>{(PAGE_META[page]||PAGE_META.dash).title}</h1>
+            <span style={S.breadcrumb}>{(PAGE_META[page]||PAGE_META.dash).crumb}</span>
           </div>
-          <div style={S.headerRight}>
+          {page!=="notes"&&page!=="ofs"&&<div style={S.headerRight}>
             <div style={S.searchWrap}>
               <Ico sz={14} c="#475569"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></Ico>
               <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search basins, formations..." style={S.searchIn}/>
             </div>
             <select value={ctry} onChange={e=>setCtry(e.target.value)} style={S.sel}>{COUNTRIES.map(c=><option key={c} value={c} style={{background:"#0f172a"}}>{c==="All"?"All Countries":c}</option>)}</select>
             <select value={stat} onChange={e=>setStat(e.target.value)} style={S.sel}>{STATUSES.map(s=><option key={s} value={s} style={{background:"#0f172a"}}>{s==="All"?"All Status":s}</option>)}</select>
-          </div>
+          </div>}
         </header>
         {/* Content */}
+        {(page==="notes"||page==="ofs")?(
+        <div style={S.body}>{page==="notes"?<FieldNotes/>:<OFSMetrics/>}</div>
+        ):(
         <div style={S.body}>
           <KPIs data={filtered}/>
           <div style={S.grid2}>
@@ -401,6 +425,7 @@ export default function App() {
             <Table data={filtered} sel={sel} onSel={setSel}/>
           </div>
         </div>
+        )}
       </main>
       <Drawer basin={sel} onClose={()=>setSel(null)}/>
     </div>
