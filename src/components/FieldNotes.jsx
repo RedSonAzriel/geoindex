@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useWatchlist, noteWatched } from "./Watchlist";
 import { FIELD_NOTES, NOTE_CATEGORIES } from "../data/fieldNotes";
 
 var CAT_CLR = {
@@ -86,6 +87,10 @@ export default function FieldNotes() {
   var liveState = useState(null);
   var live = liveState[0];
   var setLive = liveState[1];
+  var wl = useWatchlist();
+  var watchState = useState(false);
+  var onlyWatch = watchState[0];
+  var setOnlyWatch = watchState[1];
   var modeState = useState("live");
   var mode = modeState[0];
   var setMode = modeState[1];
@@ -112,6 +117,9 @@ export default function FieldNotes() {
     if (cat !== "All") {
       r = r.filter(function (n) { return n.category === cat; });
     }
+    if (onlyWatch) {
+      r = r.filter(function (n) { return noteWatched(n, wl.names); });
+    }
     if (q) {
       var lq = q.toLowerCase();
       r = r.filter(function (n) {
@@ -119,7 +127,7 @@ export default function FieldNotes() {
       });
     }
     return r;
-  }, [source, cat, q]);
+  }, [source, cat, q, onlyWatch, wl.names]);
 
   return (
     <div style={ST.wrap}>
@@ -149,6 +157,9 @@ export default function FieldNotes() {
             );
           })}
         </div>
+        <div style={ST.tabs}>
+          <button style={tabStyle(onlyWatch)} onClick={function () { setOnlyWatch(!onlyWatch); }}>{"\u2605"} Watchlist{wl.names.length > 0 ? " (" + wl.names.length + ")" : ""}</button>
+        </div>
         <input
           value={q}
           onChange={function (e) { setQ(e.target.value); }}
@@ -156,7 +167,7 @@ export default function FieldNotes() {
           style={ST.search}
         />
       </div>
-      {rows.length === 0 && <div style={ST.empty}>No field notes match your filters.</div>}
+      {rows.length === 0 && <div style={ST.empty}>{onlyWatch && wl.names.length === 0 ? "Your watchlist is empty. Star basins on the dashboard to follow them here." : "No field notes match your filters."}</div>}
       {rows.map(function (n) {
         var open = openId === n.id;
         return (

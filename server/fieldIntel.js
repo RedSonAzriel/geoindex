@@ -8,7 +8,7 @@ var cfg = require('./feeds.config');
 var CACHE_DIR = path.join(__dirname, '..', 'data-cache');
 var CACHE_FILE = path.join(CACHE_DIR, 'field-intel.json');
 
-var state = { items: [], meta: { fetchedAt: null, recordCount: 0, feeds: [], lastError: null } };
+var state = { items: [], signals: {}, meta: { fetchedAt: null, recordCount: 0, feeds: [], lastError: null } };
 var refreshing = null;
 
 // ---------- parsing ----------
@@ -202,7 +202,39 @@ function build(results) {
     }
     if (!dup) { kept.push(cands[i]); keptTok.push(t); }
   }
-  return kept.slice(0, cfg.maxItems);
+  return { items: kept.slice(0, cfg.maxItems), signals: computeSignals(kept) };
+}
+
+// Per-basin news signals: counts over 7 / 30 / prior 30 days and a status label.
+// Computed on the full deduped set (before the display cap) so "quiet" is judged on real history.
+function computeSignals(items) {
+  var now = Date.now();
+  var DAY = 86400000;
+  var out = {};
+  var seen = {};
+  cfg.basinKeywords.forEach(function (k) { seen[k[1]] = 1; });
+  Object.keys(seen).forEach(function (tag) {
+    out[tag] = { n7: 0, n30: 0, prev30: 0, total: 0, last: null, daysSince: null, status: 'none' };
+  });
+  items.forEach(function (it) {
+    var s = out[it.basin];
+    if (!s) return;
+    var age = (now - new Date(it.date).getTime()) / DAY;
+    s.total++;
+    if (age <= 7) s.n7++;
+    if (age <= 30) s.n30++;
+    else if (age <= 60) s.prev30++;
+    if (!s.last || it.date > s.last) s.last = it.date;
+  });
+  Object.keys(out).forEach(function (tag) {
+    var s = out[tag];
+    if (s.last) s.daysSince = Math.max(0, Math.round((now - new Date(s.last).getTime()) / DAY));
+    if (s.total === 0) s.status = 'none';
+    else if (s.n7 >= 3 || (s.n30 >= 5 && s.n30 >= 2 * s.prev30)) s.status = 'surge';
+    else if (s.daysSince > 60) s.status = 'quiet';
+    else s.status = 'steady';
+  });
+  return out;
 }
 
 function refresh() {
@@ -217,8 +249,9 @@ function refresh() {
       console.warn('[field-intel] all feeds failed; keeping previous cache');
       return;
     }
-    var items = build(results);
-    state = { items: items, meta: { fetchedAt: new Date().toISOString(), recordCount: items.length, feeds: feedsMeta, lastError: null } };
+    var built = build(results);
+    var items = built.items;
+    state = { items: items, signals: built.signals, meta: { fetchedAt: new Date().toISOString(), recordCount: items.length, feeds: feedsMeta, lastError: null } };
     try {
       if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
       fs.writeFileSync(CACHE_FILE + '.tmp', JSON.stringify(state));
@@ -249,7 +282,7 @@ function start() {
 // ---------- handlers ----------
 function handleFieldIntel(req, res) {
   res.set('Cache-Control', 'public, max-age=300');
-  res.json({ items: state.items, meta: state.meta });
+  res.json({ items: state.items, signals: state.signals || {}, meta: state.meta, windowDays: cfg.maxAgeDays });
 }
 
 function handleHealth(req, res) {
@@ -265,4 +298,4 @@ function handleHealth(req, res) {
   });
 }
 
-module.exports = { start: start, refresh: refresh, handleFieldIntel: handleFieldIntel, handleHealth: handleHealth, parseFeed: parseFeed, toNote: toNote, build: build };
+module.exports = { start: start, refresh: refresh, handleFieldIntel: handleFieldIntel, handleHealth: handleHealth, parseFeed: parseFeed, toNote: toNote, build: build, computeSignals: computeSignals };

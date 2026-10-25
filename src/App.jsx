@@ -1,6 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import FieldNotes from "./components/FieldNotes";
 import OFSMetrics from "./components/OFSMetrics";
+import DataSources from "./components/DataSources";
+import { useWatchlist, Star } from "./components/Watchlist";
+import { useFieldSignals, SignalBadge, SignalPanel } from "./components/Signals";
 import { useInfraLayer, InfraLegend, InfraSelect, DevReadiness } from "./components/InfraOverlay";
 
 const BASINS = [
@@ -48,6 +51,7 @@ const NAV_ITEMS = [
   {id:"lib",label:"Data Library",icon:<Ico sz={17} c="inherit"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></Ico>},
   {id:"notes",label:"Field Notes",icon:<Ico sz={17} c="inherit"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></Ico>},
   {id:"ofs",label:"OFS Metrics",icon:<Ico sz={17} c="inherit"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></Ico>},
+  {id:"sources",label:"Data & Sources",icon:<Ico sz={17} c="inherit"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></Ico>},
   {id:"fore",label:"Forecasts",icon:<Ico sz={17} c="inherit"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Ico>,soon:true},
 ];
 
@@ -58,6 +62,7 @@ const PAGE_META = {
   lib:{title:"Data Library",crumb:"Reference data \u00B7 East Africa & Horn of Africa Region"},
   notes:{title:"Field Notes",crumb:"Curated E&P news \u00B7 East Africa & Horn of Africa Region"},
   ofs:{title:"OFS Metrics",crumb:"Wells and spending \u00B7 East Africa & Horn of Africa Region"},
+  sources:{title:"Data & Sources",crumb:"Provenance and limits \u00B7 every dataset in GeoIndex"},
   fore:{title:"Forecasts",crumb:"Coming soon"}
 };
 
@@ -278,14 +283,14 @@ function MapPanel({data,sel,onSel}) {
 }
 
 // ── TABLE
-function Table({data,sel,onSel}) {
+function Table({data,sel,onSel,sig,wl}) {
   return (
     <div style={{...S.card,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
       <div style={S.cardHead}><span style={S.cardLabel}>Basin Library</span></div>
       <div style={{overflowY:"auto",flex:1}}>
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
           <thead>
-            <tr>{["Basin","Country","Type","Status","Oil P50","Gas P50","Wells"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr>
+            <tr>{["Basin","Country","Type","Status","Oil P50","Gas P50","Wells","News"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr>
           </thead>
           <tbody>
             {data.map(b=>{
@@ -293,13 +298,14 @@ function Table({data,sel,onSel}) {
               return(
                 <tr key={b.id} onClick={()=>onSel(b)} style={{background:is?"#1a2540":"transparent",cursor:"pointer",borderBottom:"1px solid #1e293b20",transition:"background .12s"}}
                   onMouseEnter={e=>{if(!is)e.currentTarget.style.background="#111c30"}} onMouseLeave={e=>{if(!is)e.currentTarget.style.background="transparent"}}>
-                  <td style={S.td}><span style={{fontWeight:600,color:"#e2e8f0"}}>{b.name}</span></td>
+                  <td style={S.td}><Star on={wl.has(b.name)} onClick={()=>wl.toggle(b.name)} size={13}/> <span style={{fontWeight:600,color:"#e2e8f0"}}>{b.name}</span></td>
                   <td style={S.td}><span style={{marginRight:3}}>{FLAG[b.country]}</span>{b.country}</td>
                   <td style={S.td}>{b.type}</td>
                   <td style={S.td}><span style={{...S.pill,color:STATUS_CLR[b.status],background:`${STATUS_CLR[b.status]}15`,border:`1px solid ${STATUS_CLR[b.status]}28`}}>{b.status}</span></td>
                   <td style={{...S.td,fontVariantNumeric:"tabular-nums"}}><span style={{color:"#fbbf24",fontWeight:600}}>{b.estimated_oil_mmbo.p50.toLocaleString()}</span><span style={{color:"#475569",fontSize:10,marginLeft:3}}>MMBO</span></td>
                   <td style={{...S.td,fontVariantNumeric:"tabular-nums"}}><span style={{color:"#60a5fa",fontWeight:600}}>{b.estimated_gas_tcf.p50.toLocaleString()}</span><span style={{color:"#475569",fontSize:10,marginLeft:3}}>Tcf</span></td>
                   <td style={{...S.td,textAlign:"center"}}>{b.wells_drilled}</td>
+                  <td style={S.td}><SignalBadge basin={b} data={sig}/></td>
                 </tr>
               );
             })}
@@ -311,7 +317,7 @@ function Table({data,sel,onSel}) {
 }
 
 // ── DETAIL DRAWER
-function Drawer({basin:b,onClose}) {
+function Drawer({basin:b,onClose,sig,wl}) {
   if(!b) return null;
   const c=STATUS_CLR[b.status];
   const Bar=({label,p90,p50,p10,unit,accent})=>{const mx=p10*1.15;return(
@@ -339,7 +345,7 @@ function Drawer({basin:b,onClose}) {
               <span style={{...S.pill,color:c,background:`${c}15`,border:`1px solid ${c}28`}}>{b.status}</span>
               <span style={{fontSize:11,color:"#475569"}}>{FLAG[b.country]} {b.country}</span>
             </div>
-            <h2 style={{margin:0,fontSize:22,fontWeight:700,color:"#f1f5f9"}}>{b.name}</h2>
+            <h2 style={{margin:0,fontSize:22,fontWeight:700,color:"#f1f5f9"}}><Star on={wl.has(b.name)} onClick={()=>wl.toggle(b.name)} size={20}/> {b.name}</h2>
             <div style={{fontSize:12,color:"#475569",marginTop:3}}>{b.type} Basin</div>
           </div>
           <button onClick={onClose} style={S.xBtn}><Ico sz={15} c="#64748b"><path d="M18 6L6 18M6 6l12 12"/></Ico></button>
@@ -354,6 +360,7 @@ function Drawer({basin:b,onClose}) {
           <Bar label="Recoverable Oil" p90={b.estimated_oil_mmbo.p90} p50={b.estimated_oil_mmbo.p50} p10={b.estimated_oil_mmbo.p10} unit="MMBO" accent="#fbbf24"/>
           <Bar label="Recoverable Gas" p90={b.estimated_gas_tcf.p90} p50={b.estimated_gas_tcf.p50} p10={b.estimated_gas_tcf.p10} unit="Tcf" accent="#60a5fa"/>
         </div>
+        <SignalPanel basin={b} data={sig}/>
         <DevReadiness basin={b}/>
         <div style={{marginBottom:14}}>
           <div style={S.secTitle}>Key Formations</div>
@@ -380,14 +387,18 @@ export default function App() {
   const [ctry,setCtry]=useState("All");
   const [stat,setStat]=useState("All");
   const [sel,setSel]=useState(null);
+  const sig=useFieldSignals();
+  const wl=useWatchlist();
+  const [onlyWatch,setOnlyWatch]=useState(false);
 
   const filtered=useMemo(()=>{
     let r=BASINS;
     if(q){const lq=q.toLowerCase();r=r.filter(b=>b.name.toLowerCase().includes(lq)||b.formations.some(f=>f.toLowerCase().includes(lq))||b.plays.some(p=>p.toLowerCase().includes(lq))||b.notes.toLowerCase().includes(lq));}
     if(ctry!=="All")r=r.filter(b=>b.country===ctry);
     if(stat!=="All")r=r.filter(b=>b.status===stat);
+    if(onlyWatch)r=r.filter(b=>wl.names.indexOf(b.name)>=0);
     return r;
-  },[q,ctry,stat]);
+  },[q,ctry,stat,onlyWatch,wl.names]);
 
   return(
     <div style={S.root}>
@@ -405,29 +416,30 @@ export default function App() {
             <h1 style={S.pageTitle}>{(PAGE_META[page]||PAGE_META.dash).title}</h1>
             <span style={S.breadcrumb}>{(PAGE_META[page]||PAGE_META.dash).crumb}</span>
           </div>
-          {page!=="notes"&&page!=="ofs"&&<div style={S.headerRight}>
+          {page!=="notes"&&page!=="ofs"&&page!=="sources"&&<div style={S.headerRight}>
             <div style={S.searchWrap}>
               <Ico sz={14} c="#475569"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></Ico>
               <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search basins, formations..." style={S.searchIn}/>
             </div>
             <select value={ctry} onChange={e=>setCtry(e.target.value)} style={S.sel}>{COUNTRIES.map(c=><option key={c} value={c} style={{background:"#0f172a"}}>{c==="All"?"All Countries":c}</option>)}</select>
+            <button onClick={()=>setOnlyWatch(!onlyWatch)} style={{...S.sel,minWidth:0,color:onlyWatch?"#fbbf24":"#94a3b8",borderColor:onlyWatch?"#fbbf2450":"#1e2d45"}}>{"\u2605"} Watchlist{wl.names.length>0?" ("+wl.names.length+")":""}</button>
             <select value={stat} onChange={e=>setStat(e.target.value)} style={S.sel}>{STATUSES.map(s=><option key={s} value={s} style={{background:"#0f172a"}}>{s==="All"?"All Status":s}</option>)}</select>
           </div>}
         </header>
         {/* Content */}
-        {(page==="notes"||page==="ofs")?(
-        <div style={S.body}>{page==="notes"?<FieldNotes/>:<OFSMetrics/>}</div>
+        {(page==="notes"||page==="ofs"||page==="sources")?(
+        <div style={S.body}>{page==="notes"?<FieldNotes/>:page==="ofs"?<OFSMetrics/>:<DataSources/>}</div>
         ):(
         <div style={S.body}>
           <KPIs data={filtered}/>
           <div style={S.grid2}>
             <MapPanel data={filtered} sel={sel} onSel={setSel}/>
-            <Table data={filtered} sel={sel} onSel={setSel}/>
+            <Table data={filtered} sel={sel} onSel={setSel} sig={sig} wl={wl}/>
           </div>
         </div>
         )}
       </main>
-      <Drawer basin={sel} onClose={()=>setSel(null)}/>
+      <Drawer basin={sel} onClose={()=>setSel(null)} sig={sig} wl={wl}/>
     </div>
   );
 }

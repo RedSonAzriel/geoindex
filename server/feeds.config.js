@@ -54,7 +54,16 @@ module.exports = {
     ['mandawa', 'Mandawa Basin'],
     ['ogaden', 'Ogaden Basin'],
     ['lake kivu', 'Lake Kivu'],
-    ['kivuwatt', 'Lake Kivu']
+    ['kivuwatt', 'Lake Kivu'],
+    ['gambela', 'Gambela Basin'],
+    ['blue nile', 'Blue Nile Basin'],
+    ['selous', 'Selous Basin'],
+    ['ruvu basin', 'Ruvu Basin'],
+    ['mudugh', 'Mudugh Basin'],
+    ['nogal', 'Nogal Basin'],
+    ['danakil', 'Danakil Basin'],
+    ['albertine', 'Albertine Rift'],
+    ['mozambique channel', 'Mozambique Channel Basin']
   ],
 
   // First matching category wins; anything unmatched is "Development".
