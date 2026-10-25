@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useWatchlist, noteWatched } from "./Watchlist";
+import { safeHref } from "./safeUrl";
 import { FIELD_NOTES, NOTE_CATEGORIES } from "../data/fieldNotes";
 
 var CAT_CLR = {
@@ -196,7 +197,7 @@ export default function FieldNotes() {
                         return (
                           <span key={o.url}>
                             {i > 0 ? ", " : ""}
-                            <a href={o.url} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>{o.source || "source"}</a>
+                            <a href={safeHref(o.url)} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>{o.source || "source"}</a>
                           </span>
                         );
                       })}
@@ -205,7 +206,7 @@ export default function FieldNotes() {
                   {n.url && (
                     <span>
                       {" · "}
-                      <a href={n.url} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>Open original</a>
+                      <a href={safeHref(n.url)} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>Open original</a>
                     </span>
                   )}
                 </div>

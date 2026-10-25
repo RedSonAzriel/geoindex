@@ -60,6 +60,14 @@ var DATASETS = [
     caveat: "Gas in place and gross recoverable volumes use different bases and must not be added. Some dates have no year in the source. Windjammer, Lagosta, Golfinho, Coral and others are not yet included."
   },
   {
+    name: "Forecast model assumptions",
+    status: "Placeholder",
+    records: "3 play types, 4 status levels",
+    where: "Forecasts",
+    origin: "Illustrative screening inputs set by basin type (area fraction, net pay, porosity, water saturation, recovery) and chance of success by exploration status.",
+    caveat: "Not measured data. Outputs are screening ranges, not reserves. Inputs should be replaced with analog and well data as it is collected."
+  },
+  {
     name: "OFS spending",
     status: "Placeholder",
     records: "18 records",

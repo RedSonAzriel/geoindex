@@ -3,7 +3,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const fieldIntel = require('./server/fieldIntel');
+const security = require('./server/security');
 
+app.disable('x-powered-by');
+app.set('trust proxy', 1); // Heroku sits behind one proxy
+app.use(security.httpsRedirect);
+app.use(security.headers);
+
+app.use('/api', security.rateLimit({ windowMs: 60000, max: 120 }));
 app.get('/api/field-intel', fieldIntel.handleFieldIntel);
 app.get('/api/health', fieldIntel.handleHealth);
 

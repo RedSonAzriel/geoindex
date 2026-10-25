@@ -71,9 +71,24 @@ function infraFeatures(layerId) {
   return { type: "FeatureCollection", features: feats };
 }
 
-function popupHtml(title, lines) {
-  return '<div style="font-family:Inter,sans-serif;font-size:12px;line-height:1.5;"><strong style="color:#f1f5f9;">' + title + '</strong>' +
-    lines.map(function (l) { return '<br/><span style="color:' + l[1] + ';">' + l[0] + '</span>'; }).join("") + '</div>';
+// Built with DOM nodes and textContent, so names from any source can never inject markup.
+function popupNode(title, lines) {
+  var box = document.createElement("div");
+  box.style.fontFamily = "Inter,sans-serif";
+  box.style.fontSize = "12px";
+  box.style.lineHeight = "1.5";
+  var strong = document.createElement("strong");
+  strong.style.color = "#f1f5f9";
+  strong.textContent = title;
+  box.appendChild(strong);
+  lines.forEach(function (l) {
+    box.appendChild(document.createElement("br"));
+    var span = document.createElement("span");
+    span.style.color = l[1];
+    span.textContent = l[0];
+    box.appendChild(span);
+  });
+  return box;
 }
 
 var BTN = { width: 34, height: 34, borderRadius: 8, background: "rgba(15,23,42,0.88)", border: "1px solid #1e293b", color: "#94a3b8", cursor: "pointer", fontSize: 15, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 };
@@ -182,7 +197,7 @@ export default function MapPanel(props) {
         var list = dataRef.current;
         for (var i = 0; i < list.length; i++) { if (list[i].id === f.properties.id) { b = list[i]; break; } }
         if (!b) return;
-        popup.setLngLat([b.lng, b.lat]).setHTML(popupHtml(b.name, [
+        popup.setLngLat([b.lng, b.lat]).setDOMContent(popupNode(b.name, [
           [b.country + " · " + b.status, "#94a3b8"],
           ["Oil P50: " + b.estimated_oil_mmbo.p50.toLocaleString() + " MMBO", "#fbbf24"],
           ["Gas P50: " + b.estimated_gas_tcf.p50.toLocaleString() + " Tcf", "#60a5fa"]
@@ -246,7 +261,7 @@ export default function MapPanel(props) {
     function over(e) {
       var f = e.features && e.features[0];
       if (!f) return;
-      tip.setLngLat(f.geometry.coordinates).setHTML(popupHtml(f.properties.name, [[f.properties.kind + (f.properties.country ? " \u00B7 " + f.properties.country : ""), "#94a3b8"]])).addTo(map);
+      tip.setLngLat(f.geometry.coordinates).setDOMContent(popupNode(f.properties.name, [[f.properties.kind + (f.properties.country ? " \u00B7 " + f.properties.country : ""), "#94a3b8"]])).addTo(map);
     }
     function out() { tip.remove(); }
     map.on("mouseenter", "infra-pts", over);

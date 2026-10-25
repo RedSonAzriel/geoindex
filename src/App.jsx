@@ -4,6 +4,7 @@ import OFSMetrics from "./components/OFSMetrics";
 import DataSources from "./components/DataSources";
 import { useWatchlist, Star } from "./components/Watchlist";
 import { Dashboard, Library } from "./components/Pages";
+import Forecasts from "./components/Forecasts";
 import { useFieldSignals, SignalBadge, SignalPanel } from "./components/Signals";
 import { DevReadiness } from "./components/InfraOverlay";
 import MapPanel from "./components/MapGL";
@@ -54,7 +55,7 @@ const NAV_ITEMS = [
   {id:"notes",label:"Field Notes",icon:<Ico sz={17} c="inherit"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></Ico>},
   {id:"ofs",label:"OFS Metrics",icon:<Ico sz={17} c="inherit"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></Ico>},
   {id:"sources",label:"Data & Sources",icon:<Ico sz={17} c="inherit"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></Ico>},
-  {id:"fore",label:"Forecasts",icon:<Ico sz={17} c="inherit"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Ico>,soon:true},
+  {id:"fore",label:"Forecasts",icon:<Ico sz={17} c="inherit"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Ico>},
 ];
 
 // ── PAGE META
@@ -65,7 +66,7 @@ const PAGE_META = {
   notes:{title:"Field Notes",crumb:"Curated E&P news \u00B7 East Africa & Horn of Africa Region"},
   ofs:{title:"OFS Metrics",crumb:"Wells and spending \u00B7 East Africa & Horn of Africa Region"},
   sources:{title:"Data & Sources",crumb:"Provenance and limits \u00B7 every dataset in GeoIndex"},
-  fore:{title:"Forecasts",crumb:"Coming soon"}
+  fore:{title:"Forecasts",crumb:"Monte Carlo volumetrics"}
 };
 
 // ── SIDEBAR
@@ -258,7 +259,7 @@ export default function App() {
             <h1 style={S.pageTitle}>{(PAGE_META[page]||PAGE_META.dash).title}</h1>
             <span style={S.breadcrumb}>{(PAGE_META[page]||PAGE_META.dash).crumb}</span>
           </div>
-          {page!=="notes"&&page!=="ofs"&&page!=="sources"&&<div style={S.headerRight}>
+          {page!=="notes"&&page!=="ofs"&&page!=="sources"&&page!=="fore"&&<div style={S.headerRight}>
             <div style={S.searchWrap}>
               <Ico sz={14} c="#475569"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></Ico>
               <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search basins, formations..." style={S.searchIn}/>
@@ -269,8 +270,8 @@ export default function App() {
           </div>}
         </header>
         {/* Content */}
-        {(page==="notes"||page==="ofs"||page==="sources")?(
-        <div style={S.body}>{page==="notes"?<FieldNotes/>:page==="ofs"?<OFSMetrics/>:<DataSources/>}</div>
+        {(page==="notes"||page==="ofs"||page==="sources"||page==="fore")?(
+        <div style={S.body}>{page==="notes"?<FieldNotes/>:page==="ofs"?<OFSMetrics/>:page==="fore"?<Forecasts basins={BASINS}/>:<DataSources/>}</div>
         ):(
         <div style={S.body}>
           {page==="dash"&&<KPIs data={filtered}/>}

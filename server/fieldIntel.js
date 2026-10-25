@@ -39,6 +39,14 @@ function pickLink(block) {
   return any ? decode(any[1]) : '';
 }
 
+// Only http(s) links are kept; anything else (javascript:, data:, file:) is dropped.
+function safeLink(u) {
+  try {
+    var p = new URL(String(u || ''));
+    return p.protocol === 'http:' || p.protocol === 'https:' ? p.href : '';
+  } catch (e) { return ''; }
+}
+
 function parseFeed(xml, fallbackSource) {
   var out = [];
   var re = /<(item|entry)[\s>][\s\S]*?<\/\1>/gi;
@@ -46,7 +54,7 @@ function parseFeed(xml, fallbackSource) {
   while ((m = re.exec(xml)) !== null) {
     var block = m[0];
     var title = clean(pick(block, 'title'));
-    var link = pickLink(block);
+    var link = safeLink(pickLink(block));
     var dateRaw = clean(pick(block, 'pubDate') || pick(block, 'published') || pick(block, 'updated') || pick(block, 'dc:date'));
     var d = new Date(dateRaw);
     var source = clean(pick(block, 'source')) || fallbackSource || '';
@@ -135,6 +143,7 @@ async function fetchOne(feed) {
   try {
     var r = await fetch(feed.url, { signal: ctl.signal, headers: { 'User-Agent': 'GeoIndex-FieldIntel/1.0' } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (r.url && !hostAllowed(r.url)) throw new Error('redirected to a host that is not allowed');
     var xml = await r.text();
     if (xml.length > cfg.maxBytes) throw new Error('response too large');
     res.raw = parseFeed(xml, feed.name);

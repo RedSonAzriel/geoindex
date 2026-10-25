@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { readinessScore } from "../data/infrastructure";
 import { SignalBadge } from "./Signals";
 import { Star } from "./Watchlist";
+import { safeHref } from "./safeUrl";
 
 var STATUS_CLR = { Frontier: "#a78bfa", Exploration: "#fbbf24", Appraisal: "#60a5fa", Development: "#34d399" };
 var STATUS_ORDER = ["Frontier", "Exploration", "Appraisal", "Development"];
@@ -148,7 +149,7 @@ export function Dashboard(props) {
         {(sig.items || []).slice(0, 6).map(function (n) {
           return (
             <div key={n.id} style={Object.assign({}, ST.row, { cursor: "default", alignItems: "flex-start", flexDirection: "column", gap: 2 })}>
-              <a href={n.url} target="_blank" rel="noopener noreferrer" style={{ color: "#e2e8f0", fontSize: 12, textDecoration: "none", lineHeight: 1.4 }}>{n.title}</a>
+              <a href={safeHref(n.url)} target="_blank" rel="noopener noreferrer" style={{ color: "#e2e8f0", fontSize: 12, textDecoration: "none", lineHeight: 1.4 }}>{n.title}</a>
               <span style={{ fontSize: 10, color: "#475569" }}>{fmtDate(n.date)} {"·"} {n.source}{n.country ? " · " + n.country : ""}{n.sourceCount > 1 ? " · " + n.sourceCount + " outlets" : ""}</span>
             </div>
           );
