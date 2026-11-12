@@ -149,8 +149,7 @@ export default function BasinViewer3D(props) {
     renderer.setSize(w, h);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x080e1a, 1);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = false;
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
