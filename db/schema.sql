@@ -1,100 +1,151 @@
--- GeoIndex Postgres schema (PostgreSQL 12+). Portable: works on Heroku Postgres, Neon, Supabase or self-hosted.
--- Not applied anywhere yet. Seed data currently lives in src/App.jsx and src/data/*.js.
--- Resource ranges follow the app's convention: P90 is the low case and P10 the high case (p90 <= p50 <= p10).
+-- ══════════════════════════════════════════════════════════════════
+-- GeoIndex — Full Database Schema
+-- PostgreSQL 14+
+-- ══════════════════════════════════════════════════════════════════
 
-BEGIN;
-
+-- ── BASINS ──────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS basins (
-  id              text PRIMARY KEY,                 -- e.g. 'lamu', 'rovuma_off'
-  name            text NOT NULL,
-  country         text NOT NULL,
-  type            text NOT NULL,                    -- Rift, Passive Margin, Intracratonic, ...
-  status          text NOT NULL CHECK (status IN ('Frontier', 'Exploration', 'Appraisal', 'Development')),
-  area_km2        integer CHECK (area_km2 > 0),
-  depth_min_m     integer,
-  depth_max_m     integer,
-  formations      text[] NOT NULL DEFAULT '{}',
-  plays           text[] NOT NULL DEFAULT '{}',
-  oil_mmbo_p90    numeric,
-  oil_mmbo_p50    numeric,
-  oil_mmbo_p10    numeric,
-  gas_tcf_p90     numeric,
-  gas_tcf_p50     numeric,
-  gas_tcf_p10     numeric,
-  wells_drilled   integer NOT NULL DEFAULT 0 CHECK (wells_drilled >= 0),
-  discovery_year  integer,
-  lat             numeric(8, 5) NOT NULL CHECK (lat BETWEEN -90 AND 90),
-  lng             numeric(8, 5) NOT NULL CHECK (lng BETWEEN -180 AND 180),
-  source          text,
-  notes           text,
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT basins_depth_order CHECK (depth_min_m IS NULL OR depth_max_m IS NULL OR depth_min_m <= depth_max_m),
-  CONSTRAINT basins_oil_order CHECK (oil_mmbo_p90 IS NULL OR (oil_mmbo_p90 <= oil_mmbo_p50 AND oil_mmbo_p50 <= oil_mmbo_p10)),
-  CONSTRAINT basins_gas_order CHECK (gas_tcf_p90 IS NULL OR (gas_tcf_p90 <= gas_tcf_p50 AND gas_tcf_p50 <= gas_tcf_p10))
+  id              VARCHAR(50) PRIMARY KEY,
+  name            VARCHAR(200) NOT NULL,
+  country         VARCHAR(100) NOT NULL,
+  type            VARCHAR(100),
+  status          VARCHAR(50) CHECK (status IN ('Frontier','Exploration','Appraisal','Development')),
+  area_km2        INTEGER,
+  depth_m_min     INTEGER,
+  depth_m_max     INTEGER,
+  formations      TEXT[],
+  plays           TEXT[],
+  oil_p90         NUMERIC,
+  oil_p50         NUMERIC,
+  oil_p10         NUMERIC,
+  gas_p90         NUMERIC,
+  gas_p50         NUMERIC,
+  gas_p10         NUMERIC,
+  wells_drilled   INTEGER DEFAULT 0,
+  discovery_year  INTEGER,
+  lat             NUMERIC(8,4),
+  lng             NUMERIC(8,4),
+  polygon         JSONB,
+  source          TEXT,
+  notes           TEXT,
+  -- Petrophysical data
+  petro_toc       NUMERIC,
+  petro_porosity  NUMERIC,
+  petro_perm      NUMERIC,
+  petro_sw        NUMERIC,
+  petro_netpay    NUMERIC,
+  petro_td        NUMERIC,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW(),
+  is_uploaded     BOOLEAN DEFAULT FALSE
 );
-CREATE INDEX IF NOT EXISTS basins_country_idx ON basins (country);
-CREATE INDEX IF NOT EXISTS basins_status_idx ON basins (status);
 
--- Field Notes: live RSS items and curated reference entries.
+CREATE INDEX idx_basins_country ON basins (country);
+CREATE INDEX idx_basins_status ON basins (status);
+
+-- ── FIELD NOTES ────────────────────────────────────────────────
+-- Curated Africa E&P industry intelligence (DrillSource-style)
 CREATE TABLE IF NOT EXISTS field_notes (
-  id          text PRIMARY KEY,                     -- app id, e.g. 'live-1x2y3z' or 'fn-eacop-fid'
-  note_date   date NOT NULL,
-  category    text NOT NULL CHECK (category IN ('Discovery', 'Development', 'Corporate', 'Infrastructure', 'Policy')),
-  country     text NOT NULL,
-  basin_id    text REFERENCES basins (id) ON DELETE SET NULL,
-  basin_label text,                                 -- free text when no matching basin row
-  title       text NOT NULL,
-  summary     text,
-  detail      text,
-  source      text,
-  url         text UNIQUE,                          -- upsert key for live items; NULL for curated entries
-  is_live     boolean NOT NULL DEFAULT false,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
+  id              SERIAL PRIMARY KEY,
+  title           VARCHAR(500) NOT NULL,
+  body            TEXT NOT NULL,
+  published_at    DATE NOT NULL DEFAULT CURRENT_DATE,
+  source_name     VARCHAR(200),
+  source_url      TEXT,
+  countries       TEXT[] DEFAULT '{}',
+  basin_ids       TEXT[] DEFAULT '{}',
+  tags            TEXT[] DEFAULT '{}',
+  category        VARCHAR(50) CHECK (category IN (
+    'Discovery','Licensing','Drilling','Production',
+    'Infrastructure','Policy','M&A','Market','ESG'
+  )),
+  author          VARCHAR(200) DEFAULT 'GeoIndex Editorial',
+  created_at      TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS field_notes_date_idx ON field_notes (note_date DESC);
-CREATE INDEX IF NOT EXISTS field_notes_category_idx ON field_notes (category);
-CREATE INDEX IF NOT EXISTS field_notes_country_idx ON field_notes (country);
 
--- One row per feed refresh. Same idea as a freshness stamp: /api/health reads the newest successful row.
-CREATE TABLE IF NOT EXISTS feed_runs (
-  id            bigserial PRIMARY KEY,
-  fetched_at    timestamptz NOT NULL DEFAULT now(),
-  ok            boolean NOT NULL,
-  record_count  integer NOT NULL DEFAULT 0,
-  error         text,
-  feeds         jsonb NOT NULL DEFAULT '[]'::jsonb  -- per-feed {name, ok, count, error}
+CREATE INDEX idx_fn_published ON field_notes (published_at DESC);
+CREATE INDEX idx_fn_countries ON field_notes USING GIN (countries);
+CREATE INDEX idx_fn_tags ON field_notes USING GIN (tags);
+CREATE INDEX idx_fn_category ON field_notes (category);
+
+-- Attachments for field notes
+CREATE TABLE IF NOT EXISTS field_files (
+  id              SERIAL PRIMARY KEY,
+  note_id         INTEGER REFERENCES field_notes(id) ON DELETE CASCADE,
+  filename        VARCHAR(300) NOT NULL,
+  file_url        TEXT NOT NULL,
+  file_type       VARCHAR(50),
+  file_size_kb    INTEGER
 );
-CREATE INDEX IF NOT EXISTS feed_runs_fetched_idx ON feed_runs (fetched_at DESC);
 
--- OFS Metrics
+-- ── OFS METRICS ────────────────────────────────────────────────
+-- Wells drilled per country/basin/year
 CREATE TABLE IF NOT EXISTS ofs_wells (
-  id          text PRIMARY KEY,
-  name        text NOT NULL,
-  country     text NOT NULL,
-  basin_id    text REFERENCES basins (id) ON DELETE SET NULL,
-  basin_label text,
-  operator    text,
-  year        integer CHECK (year BETWEEN 1900 AND 2100),
-  well_type   text CHECK (well_type IN ('Exploration', 'Appraisal', 'Development')),
-  result      text,                                 -- e.g. 'Gas discovery', 'Oil discovery', 'Dry'
-  created_at  timestamptz NOT NULL DEFAULT now()
+  id              SERIAL PRIMARY KEY,
+  country         VARCHAR(100) NOT NULL,
+  basin_id        VARCHAR(50) REFERENCES basins(id),
+  year            INTEGER NOT NULL,
+  operator        VARCHAR(200),
+  parent_company  VARCHAR(200),
+  well_name       VARCHAR(200),
+  well_type       VARCHAR(50) CHECK (well_type IN (
+    'Exploration','Appraisal','Development','Workover'
+  )),
+  spud_date       DATE,
+  td_date         DATE,
+  td_ft           INTEGER,
+  result          VARCHAR(50) CHECK (result IN (
+    'Oil Discovery','Gas Discovery','Oil & Gas','Dry','Suspended','Drilling'
+  )),
+  rig_name        VARCHAR(200),
+  lat             NUMERIC(8,4),
+  lng             NUMERIC(8,4),
+  created_at      TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS ofs_wells_country_year_idx ON ofs_wells (country, year);
 
+CREATE INDEX idx_ofs_wells_country ON ofs_wells (country);
+CREATE INDEX idx_ofs_wells_year ON ofs_wells (year);
+CREATE INDEX idx_ofs_wells_operator ON ofs_wells (operator);
+
+-- OFS spending by service category
 CREATE TABLE IF NOT EXISTS ofs_spending (
-  id              text PRIMARY KEY,
-  country         text NOT NULL,
-  year            integer NOT NULL CHECK (year BETWEEN 1900 AND 2100),
-  category        text NOT NULL CHECK (category IN ('Drilling', 'Seismic', 'Development', 'Facilities')),
-  parent_company  text NOT NULL,
-  usd_m           numeric NOT NULL CHECK (usd_m >= 0),
-  is_placeholder  boolean NOT NULL DEFAULT true,    -- flip to false only for sourced figures
-  source          text,
-  created_at      timestamptz NOT NULL DEFAULT now()
+  id              SERIAL PRIMARY KEY,
+  country         VARCHAR(100) NOT NULL,
+  basin_id        VARCHAR(50) REFERENCES basins(id),
+  year            INTEGER NOT NULL,
+  quarter         INTEGER CHECK (quarter BETWEEN 1 AND 4),
+  operator        VARCHAR(200),
+  parent_company  VARCHAR(200),
+  -- Service categories (USD thousands)
+  cement          NUMERIC DEFAULT 0,
+  casing_wh       NUMERIC DEFAULT 0,
+  directional     NUMERIC DEFAULT 0,
+  driller         NUMERIC DEFAULT 0,
+  frac            NUMERIC DEFAULT 0,
+  mud             NUMERIC DEFAULT 0,
+  pipe            NUMERIC DEFAULT 0,
+  logging         NUMERIC DEFAULT 0,
+  completion      NUMERIC DEFAULT 0,
+  other           NUMERIC DEFAULT 0,
+  total_spend     NUMERIC GENERATED ALWAYS AS (
+    cement + casing_wh + directional + driller + frac + mud + pipe + logging + completion + other
+  ) STORED,
+  created_at      TIMESTAMPTZ DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS ofs_spending_country_year_idx ON ofs_spending (country, year);
-CREATE INDEX IF NOT EXISTS ofs_spending_parent_idx ON ofs_spending (parent_company);
 
-COMMIT;
+CREATE INDEX idx_ofs_spend_country ON ofs_spending (country);
+CREATE INDEX idx_ofs_spend_year ON ofs_spending (year);
+CREATE INDEX idx_ofs_spend_parent ON ofs_spending (parent_company);
+
+-- ── HELPER: updated_at trigger ─────────────────────────────────
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER basins_updated
+  BEFORE UPDATE ON basins
+  FOR EACH ROW EXECUTE FUNCTION update_timestamp();

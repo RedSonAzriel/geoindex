@@ -1,220 +1,197 @@
-import { useState, useMemo, useEffect } from "react";
-import { useWatchlist, noteWatched } from "./Watchlist";
-import { safeHref } from "./safeUrl";
-import { FIELD_NOTES, NOTE_CATEGORIES } from "../data/fieldNotes";
+import { useState, useMemo } from "react";
+import { FIELD_NOTES, CATEGORIES } from "../data/fieldNotes";
 
-var CAT_CLR = {
-  Discovery: "#fbbf24",
-  Development: "#34d399",
-  Infrastructure: "#60a5fa",
-  Policy: "#a78bfa",
-  Corporate: "#f472b6"
-};
-
-var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function fmtDate(d) {
-  var p = String(d).split("-");
-  if (p.length < 2) return p[0];
-  if (p.length === 2) return MONTHS[parseInt(p[1], 10) - 1] + " " + p[0];
-  return parseInt(p[2], 10) + " " + MONTHS[parseInt(p[1], 10) - 1] + " " + p[0];
+function formatDate(d) {
+  var dt = new Date(d + "T00:00:00");
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[dt.getMonth()] + " " + dt.getDate() + ", " + dt.getFullYear();
 }
 
-function timeAgo(iso) {
-  if (!iso) return "never";
-  var min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (min < 1) return "just now";
-  if (min < 60) return min + " min ago";
-  if (min < 1440) return Math.round(min / 60) + " h ago";
-  return Math.round(min / 1440) + " d ago";
-}
-
-var ST = {
-  wrap: { display: "flex", flexDirection: "column", gap: 14, maxWidth: 920 },
-  banner: { background: "#0c1322", border: "1px solid #1a2338", borderLeft: "3px solid #fbbf24", borderRadius: 8, padding: "9px 12px", fontSize: 11, color: "#94a3b8" },
-  bannerLive: { background: "#0c1322", border: "1px solid #1a2338", borderLeft: "3px solid #34d399", borderRadius: 8, padding: "9px 12px", fontSize: 11, color: "#94a3b8" },
-  bar: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 },
-  tabs: { display: "flex", flexWrap: "wrap", gap: 6 },
-  search: { marginLeft: "auto", background: "#0c1322", border: "1px solid #1a2338", borderRadius: 8, padding: "7px 12px", color: "#e2e8f0", fontSize: 12, width: 230, outline: "none", fontFamily: "inherit" },
-  card: { background: "#0c1322", border: "1px solid #1a2338", borderRadius: 12, padding: "14px 16px", cursor: "pointer" },
-  top: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" },
-  date: { fontSize: 11, color: "#475569", marginLeft: "auto" },
-  badge: { fontSize: 10, fontWeight: 600, color: "#34d399", background: "#34d3991f", padding: "2px 8px", borderRadius: 4 },
-  title: { fontSize: 14, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.35 },
-  summary: { fontSize: 12.5, color: "#94a3b8", marginTop: 5, lineHeight: 1.5 },
-  detail: { fontSize: 12.5, color: "#cbd5e1", marginTop: 10, paddingTop: 10, borderTop: "1px solid #1a2338", lineHeight: 1.55 },
-  meta: { fontSize: 11, color: "#475569", marginTop: 8 },
-  link: { color: "#34d399", fontWeight: 600, textDecoration: "none" },
-  empty: { padding: 30, textAlign: "center", color: "#475569", fontSize: 12 }
-};
-
-function tabStyle(active) {
-  return {
-    background: active ? "#34d399" : "#0c1322",
-    color: active ? "#06281d" : "#94a3b8",
-    border: "1px solid " + (active ? "#34d399" : "#1a2338"),
-    borderRadius: 999,
-    padding: "5px 13px",
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: "pointer",
-    fontFamily: "inherit"
-  };
-}
-
-function pillStyle(color) {
-  return {
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: ".04em",
-    textTransform: "uppercase",
-    color: color,
-    background: color + "1f",
-    padding: "2px 8px",
-    borderRadius: 4
-  };
+function catColor(cat) {
+  var c = CATEGORIES.find(function(x) { return x.key === cat; });
+  return c ? c.color : "#94a3b8";
 }
 
 export default function FieldNotes() {
-  var catState = useState("All");
-  var cat = catState[0];
-  var setCat = catState[1];
-  var qState = useState("");
-  var q = qState[0];
-  var setQ = qState[1];
-  var openState = useState(null);
-  var openId = openState[0];
-  var setOpenId = openState[1];
-  var liveState = useState(null);
-  var live = liveState[0];
-  var setLive = liveState[1];
-  var wl = useWatchlist();
-  var watchState = useState(false);
-  var onlyWatch = watchState[0];
-  var setOnlyWatch = watchState[1];
-  var modeState = useState("live");
-  var mode = modeState[0];
-  var setMode = modeState[1];
+  var _cat = useState("all");
+  var cat = _cat[0];
+  var setCat = _cat[1];
 
-  useEffect(function () {
-    var cancelled = false;
-    fetch("/api/field-intel")
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) {
-        if (!cancelled && data && data.items && data.items.length > 0) setLive(data);
-      })
-      .catch(function () {});
-    return function () { cancelled = true; };
-  }, []);
+  var _q = useState("");
+  var q = _q[0];
+  var setQ = _q[1];
 
-  var haveLive = !!live;
-  var showLive = haveLive && mode === "live";
-  var source = showLive ? live.items : FIELD_NOTES;
+  var _exp = useState(null);
+  var exp = _exp[0];
+  var setExp = _exp[1];
 
-  var rows = useMemo(function () {
-    var r = source.slice().sort(function (a, b) {
-      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
-    });
-    if (cat !== "All") {
-      r = r.filter(function (n) { return n.category === cat; });
-    }
-    if (onlyWatch) {
-      r = r.filter(function (n) { return noteWatched(n, wl.names); });
+  var notes = useMemo(function() {
+    var r = FIELD_NOTES;
+    if (cat !== "all") {
+      r = r.filter(function(n) { return n.category === cat; });
     }
     if (q) {
       var lq = q.toLowerCase();
-      r = r.filter(function (n) {
-        return (n.title + " " + (n.summary || "") + " " + (n.detail || "") + " " + n.country + " " + (n.basin || "")).toLowerCase().indexOf(lq) >= 0;
+      r = r.filter(function(n) {
+        return n.title.toLowerCase().indexOf(lq) >= 0 ||
+          n.body.toLowerCase().indexOf(lq) >= 0 ||
+          n.countries.some(function(c) { return c.toLowerCase().indexOf(lq) >= 0; }) ||
+          n.tags.some(function(t) { return t.toLowerCase().indexOf(lq) >= 0; });
       });
     }
-    return r;
-  }, [source, cat, q, onlyWatch, wl.names]);
+    return r.sort(function(a, b) {
+      return b.published_at.localeCompare(a.published_at);
+    });
+  }, [cat, q]);
 
   return (
-    <div style={ST.wrap}>
-      {showLive ? (
-        <div style={ST.bannerLive}>
-          Live feed: {live.items.length} items, updated {timeAgo(live.meta && live.meta.fetchedAt)}. Headlines are auto-tagged by keyword and link to the original publisher. Tags can be wrong.
+    <div>
+      {/* Header */}
+      <div style={S.head}>
+        <div>
+          <h2 style={S.title}>Field Notes</h2>
+          <p style={S.sub}>Curated Africa E&P industry intelligence</p>
         </div>
-      ) : (
-        <div style={ST.banner}>
-          {haveLive ? "Reference notes: " : "Live feed unavailable, showing reference notes. "}
-          Seed entries for layout and testing. Verify figures and dates against primary sources before relying on them.
-        </div>
-      )}
-      <div style={ST.bar}>
-        {haveLive && (
-          <div style={ST.tabs}>
-            <button style={tabStyle(mode === "live")} onClick={function () { setMode("live"); setOpenId(null); }}>Live</button>
-            <button style={tabStyle(mode === "ref")} onClick={function () { setMode("ref"); setOpenId(null); }}>Reference</button>
+        <div style={S.headRight}>
+          <div style={S.searchWrap}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/>
+            </svg>
+            <input
+              value={q}
+              onChange={function(e) { setQ(e.target.value); }}
+              placeholder="Search notes, countries, tags..."
+              style={S.searchIn}
+            />
           </div>
-        )}
-        <div style={ST.tabs}>
-          {NOTE_CATEGORIES.map(function (c) {
-            return (
-              <button key={c} style={tabStyle(cat === c)} onClick={function () { setCat(c); }}>
-                {c}
-              </button>
-            );
-          })}
+          <span style={S.count}>{notes.length} note{notes.length !== 1 ? "s" : ""}</span>
         </div>
-        <div style={ST.tabs}>
-          <button style={tabStyle(onlyWatch)} onClick={function () { setOnlyWatch(!onlyWatch); }}>{"\u2605"} Watchlist{wl.names.length > 0 ? " (" + wl.names.length + ")" : ""}</button>
-        </div>
-        <input
-          value={q}
-          onChange={function (e) { setQ(e.target.value); }}
-          placeholder="Search field notes..."
-          style={ST.search}
-        />
       </div>
-      {rows.length === 0 && <div style={ST.empty}>{onlyWatch && wl.names.length === 0 ? "Your watchlist is empty. Star basins on the dashboard to follow them here." : "No field notes match your filters."}</div>}
-      {rows.map(function (n) {
-        var open = openId === n.id;
-        return (
-          <div
-            key={n.id}
-            style={ST.card}
-            onClick={function () { setOpenId(open ? null : n.id); }}
-          >
-            <div style={ST.top}>
-              <span style={pillStyle(CAT_CLR[n.category] || "#94a3b8")}>{n.category}</span>
-              <span style={{ fontSize: 11, color: "#94a3b8" }}>{n.country}</span>
-              {n.sourceCount > 1 && <span style={ST.badge}>{n.sourceCount} outlets</span>}
-              <span style={ST.date}>{fmtDate(n.date)}</span>
-            </div>
-            <div style={ST.title}>{n.title}</div>
-            {n.summary && <div style={ST.summary}>{n.summary}</div>}
-            {open && (
-              <div>
-                {n.detail && <div style={ST.detail}>{n.detail}</div>}
-                <div style={ST.meta}>
-                  {n.basin ? "Basin: " + n.basin + " · " : ""}Source: {n.source}
-                  {n.others && n.others.length > 0 && (
-                    <span>
-                      {" · Also reported by: "}
-                      {n.others.map(function (o, i) {
-                        return (
-                          <span key={o.url}>
-                            {i > 0 ? ", " : ""}
-                            <a href={safeHref(o.url)} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>{o.source || "source"}</a>
-                          </span>
-                        );
-                      })}
-                    </span>
-                  )}
-                  {n.url && (
-                    <span>
-                      {" · "}
-                      <a href={safeHref(n.url)} target="_blank" rel="noopener noreferrer" style={ST.link} onClick={function (e) { e.stopPropagation(); }}>Open original</a>
-                    </span>
-                  )}
-                </div>
+
+      {/* Category tabs */}
+      <div style={S.tabs}>
+        {CATEGORIES.map(function(c) {
+          var isActive = cat === c.key;
+          var count = c.key === "all"
+            ? FIELD_NOTES.length
+            : FIELD_NOTES.filter(function(n) { return n.category === c.key; }).length;
+          return (
+            <button
+              key={c.key}
+              onClick={function() { setCat(c.key); }}
+              style={Object.assign({}, S.tab, isActive ? { background: c.color + "18", color: c.color, borderColor: c.color + "40" } : {})}
+            >
+              {c.label}
+              <span style={Object.assign({}, S.tabCount, isActive ? { background: c.color + "22", color: c.color } : {})}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Notes list */}
+      <div style={S.list}>
+        {notes.length === 0 && (
+          <div style={S.empty}>No field notes match your filters.</div>
+        )}
+        {notes.map(function(n) {
+          var isOpen = exp === n.id;
+          var cc = catColor(n.category);
+          return (
+            <div
+              key={n.id}
+              style={Object.assign({}, S.card, isOpen ? { borderColor: cc + "40" } : {})}
+              onClick={function() { setExp(isOpen ? null : n.id); }}
+            >
+              {/* Top row: date + category */}
+              <div style={S.cardTop}>
+                <span style={S.date}>{formatDate(n.published_at)}</span>
+                <span style={Object.assign({}, S.catPill, { color: cc, background: cc + "12", borderColor: cc + "25" })}>
+                  {n.category}
+                </span>
               </div>
-            )}
-          </div>
-        );
-      })}
+
+              {/* Title */}
+              <h3 style={S.cardTitle}>{n.title}</h3>
+
+              {/* Body — collapsed or expanded */}
+              <p style={Object.assign({}, S.cardBody, isOpen ? {} : S.cardBodyClamp)}>
+                {n.body}
+              </p>
+
+              {/* Countries */}
+              {n.countries.length > 0 && (
+                <div style={S.tagRow}>
+                  {n.countries.map(function(c) {
+                    return <span key={c} style={S.countryTag}>{c}</span>;
+                  })}
+                </div>
+              )}
+
+              {/* Tags */}
+              {n.tags.length > 0 && (
+                <div style={S.tagRow}>
+                  {n.tags.map(function(t) {
+                    return <span key={t} style={S.tag}>{t}</span>;
+                  })}
+                </div>
+              )}
+
+              {/* Source */}
+              <div style={S.cardFooter}>
+                <span style={S.source}>
+                  {n.source_name || "Internal"}
+                  {n.source_url && (
+                    <a
+                      href={n.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={S.sourceLink}
+                      onClick={function(e) { e.stopPropagation(); }}
+                    >
+                      {" "}View source
+                    </a>
+                  )}
+                </span>
+                <span style={S.author}>{n.author}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
+
+var S = {
+  head: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 },
+  title: { margin: 0, fontSize: 22, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-.01em" },
+  sub: { margin: 0, marginTop: 4, fontSize: 12, color: "#475569" },
+  headRight: { display: "flex", alignItems: "center", gap: 12 },
+  searchWrap: { display: "flex", alignItems: "center", gap: 7, background: "#111b2e", border: "1px solid #1e2d45", borderRadius: 8, padding: "7px 12px", minWidth: 220 },
+  searchIn: { background: "transparent", border: "none", outline: "none", color: "#e2e8f0", fontSize: 12, fontFamily: "inherit", width: "100%" },
+  count: { fontSize: 11, color: "#475569", whiteSpace: "nowrap" },
+
+  tabs: { display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #1a2338" },
+  tab: { display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid #1e2d45", background: "transparent", color: "#64748b", fontSize: 12, fontWeight: 500, fontFamily: "inherit", cursor: "pointer", transition: "all .15s" },
+  tabCount: { fontSize: 10, fontWeight: 600, background: "#1a2338", color: "#475569", padding: "1px 6px", borderRadius: 4 },
+
+  list: { display: "flex", flexDirection: "column", gap: 12 },
+  empty: { textAlign: "center", padding: 40, color: "#334155", fontSize: 13 },
+
+  card: { background: "#0c1322", border: "1px solid #1a2338", borderRadius: 12, padding: "18px 22px", cursor: "pointer", transition: "border-color .15s, box-shadow .15s" },
+  cardTop: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  date: { fontSize: 11, color: "#475569", fontWeight: 500 },
+  catPill: { fontSize: 10, fontWeight: 600, padding: "3px 9px", borderRadius: 6, border: "1px solid" },
+  cardTitle: { margin: 0, fontSize: 15, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.4, marginBottom: 8 },
+  cardBody: { margin: 0, fontSize: 13, color: "#94a3b8", lineHeight: 1.7, marginBottom: 10 },
+  cardBodyClamp: { overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" },
+
+  tagRow: { display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 },
+  countryTag: { fontSize: 10, padding: "3px 8px", borderRadius: 5, background: "#111b2e", color: "#60a5fa", border: "1px solid #1e3a5f", fontWeight: 500 },
+  tag: { fontSize: 10, padding: "3px 8px", borderRadius: 5, background: "#111b2e", color: "#64748b", border: "1px solid #1e2d4530", fontWeight: 500 },
+
+  cardFooter: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4, paddingTop: 10, borderTop: "1px solid #1a233850" },
+  source: { fontSize: 11, color: "#334155" },
+  sourceLink: { color: "#60a5fa", textDecoration: "none", fontSize: 11 },
+  author: { fontSize: 10, color: "#293548" },
+};

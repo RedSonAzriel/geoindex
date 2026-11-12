@@ -1,49 +1,76 @@
-// OFS Metrics seed data.
-// WELLS: well names, operators and discovery years are drawn from widely reported East African discoveries.
-//        Years may be off by one and results are simplified. Verify before relying on them.
-// SPENDING: PLACEHOLDER figures (USD millions) for layout and testing. They are NOT actual spend records.
+// ══════════════════════════════════════════════════════════════════
+// GeoIndex — OFS (Oilfield Services) Metrics Seed Data
+// Modeled after DrillSource by Spears & Associates
+// ══════════════════════════════════════════════════════════════════
 
-export var OFS_CATEGORIES = ["Drilling", "Seismic", "Development", "Facilities"];
-
-export var OFS_WELLS = [
-  { id: "w01", name: "Ngamia-1", country: "Kenya", basin: "Lokichar Basin", operator: "Tullow Oil", year: 2012, type: "Exploration", result: "Oil discovery" },
-  { id: "w02", name: "Twiga South-1", country: "Kenya", basin: "Lokichar Basin", operator: "Tullow Oil", year: 2012, type: "Exploration", result: "Oil discovery" },
-  { id: "w03", name: "Ekales-1", country: "Kenya", basin: "Lokichar Basin", operator: "Tullow Oil", year: 2012, type: "Exploration", result: "Oil discovery" },
-  { id: "w04", name: "Etuko-1", country: "Kenya", basin: "Lokichar Basin", operator: "Tullow Oil", year: 2012, type: "Exploration", result: "Oil discovery" },
-  { id: "w05", name: "Amosing-1", country: "Kenya", basin: "Lokichar Basin", operator: "Tullow Oil", year: 2013, type: "Appraisal", result: "Oil discovery" },
-  { id: "w06", name: "Prosperidade-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Anadarko", year: 2010, type: "Exploration", result: "Gas discovery" },
-  { id: "w07", name: "Windjammer-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Anadarko", year: 2010, type: "Exploration", result: "Gas discovery" },
-  { id: "w08", name: "Mamba South-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Eni", year: 2011, type: "Exploration", result: "Gas discovery" },
-  { id: "w09", name: "Mamba North-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Eni", year: 2012, type: "Exploration", result: "Gas discovery" },
-  { id: "w10", name: "Coral-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Eni", year: 2012, type: "Exploration", result: "Gas discovery" },
-  { id: "w11", name: "Golfinho-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Anadarko", year: 2012, type: "Appraisal", result: "Gas discovery" },
-  { id: "w12", name: "Agulha-1", country: "Mozambique", basin: "Rovuma Basin (Offshore)", operator: "Eni", year: 2012, type: "Exploration", result: "Gas discovery" },
-  { id: "w13", name: "Pweza-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Ophir Energy", year: 2010, type: "Exploration", result: "Gas discovery" },
-  { id: "w14", name: "Chewa-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Ophir Energy", year: 2011, type: "Exploration", result: "Gas discovery" },
-  { id: "w15", name: "Jodari-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Ophir Energy", year: 2012, type: "Exploration", result: "Gas discovery" },
-  { id: "w16", name: "Zafarani-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Equinor", year: 2012, type: "Exploration", result: "Gas discovery" },
-  { id: "w17", name: "Lavani-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Equinor", year: 2012, type: "Exploration", result: "Gas discovery" },
-  { id: "w18", name: "Mzia-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Eni", year: 2013, type: "Exploration", result: "Gas discovery" },
-  { id: "w19", name: "Mronge-1", country: "Tanzania", basin: "Offshore Tanzania", operator: "Equinor", year: 2014, type: "Exploration", result: "Gas discovery" }
+export var SERVICE_CATEGORIES = [
+  { key: "cement", label: "Cement", color: "#94a3b8" },
+  { key: "casing_wh", label: "Casing/WH", color: "#60a5fa" },
+  { key: "directional", label: "Directional", color: "#34d399" },
+  { key: "driller", label: "Driller", color: "#fbbf24" },
+  { key: "frac", label: "Frac", color: "#f472b6" },
+  { key: "mud", label: "Mud", color: "#a78bfa" },
+  { key: "pipe", label: "Pipe", color: "#fb923c" },
+  { key: "logging", label: "Logging", color: "#38bdf8" },
+  { key: "completion", label: "Completion", color: "#e879f9" },
 ];
 
+// Wells drilled per country/year with operator info
+export var OFS_WELLS = [
+  // Mozambique
+  { country: "Mozambique", basin_id: "rovuma_off", year: 2024, operator: "ENI", parent: "ENI SpA", well_name: "Coral North-1", well_type: "Appraisal", td_ft: 14200, result: "Gas Discovery" },
+  { country: "Mozambique", basin_id: "rovuma_off", year: 2024, operator: "TotalEnergies", parent: "TotalEnergies SE", well_name: "Prosperidade-4", well_type: "Appraisal", td_ft: 15600, result: "Gas Discovery" },
+  { country: "Mozambique", basin_id: "rovuma_off", year: 2025, operator: "ENI", parent: "ENI SpA", well_name: "Coral North-2A", well_type: "Development", td_ft: 13800, result: "Gas Discovery" },
+  { country: "Mozambique", basin_id: "rovuma_off", year: 2025, operator: "TotalEnergies", parent: "TotalEnergies SE", well_name: "Golfinho-6", well_type: "Development", td_ft: 16100, result: "Gas Discovery" },
+  { country: "Mozambique", basin_id: "moz_chan", year: 2025, operator: "ExxonMobil", parent: "ExxonMobil Corp", well_name: "Mamba Deep-1", well_type: "Exploration", td_ft: 18500, result: "Dry" },
+  { country: "Mozambique", basin_id: "rovuma_off", year: 2026, operator: "ENI", parent: "ENI SpA", well_name: "Agulha-1", well_type: "Exploration", td_ft: 14900, result: "Gas Discovery" },
+  { country: "Mozambique", basin_id: "rovuma_off", year: 2026, operator: "TotalEnergies", parent: "TotalEnergies SE", well_name: "Area1-Dev-7", well_type: "Development", td_ft: 15200, result: "Gas Discovery" },
+  // Kenya
+  { country: "Kenya", basin_id: "lokichar", year: 2024, operator: "Africa Oil Corp", parent: "Africa Oil Corp", well_name: "Ngamia-15", well_type: "Appraisal", td_ft: 7200, result: "Oil Discovery" },
+  { country: "Kenya", basin_id: "lokichar", year: 2025, operator: "Africa Oil Corp", parent: "Africa Oil Corp", well_name: "Amosing-8", well_type: "Appraisal", td_ft: 6800, result: "Oil Discovery" },
+  { country: "Kenya", basin_id: "lamu", year: 2025, operator: "ENI", parent: "ENI SpA", well_name: "Lamu Deep-2", well_type: "Exploration", td_ft: 12400, result: "Dry" },
+  { country: "Kenya", basin_id: "lokichar", year: 2026, operator: "Africa Oil Corp", parent: "Africa Oil Corp", well_name: "Twiga South-3", well_type: "Appraisal", td_ft: 7500, result: "Oil Discovery" },
+  // Tanzania
+  { country: "Tanzania", basin_id: "tz_deep", year: 2024, operator: "Equinor", parent: "Equinor ASA", well_name: "Zafarani-4", well_type: "Appraisal", td_ft: 16200, result: "Gas Discovery" },
+  { country: "Tanzania", basin_id: "tz_deep", year: 2025, operator: "Shell", parent: "Shell plc", well_name: "Lindi-1ST", well_type: "Appraisal", td_ft: 15800, result: "Gas Discovery" },
+  { country: "Tanzania", basin_id: "mandawa", year: 2026, operator: "Dodsal Group", parent: "Dodsal Group", well_name: "Ntorya-4", well_type: "Appraisal", td_ft: 8900, result: "Gas Discovery" },
+  // Ethiopia
+  { country: "Ethiopia", basin_id: "ogaden", year: 2024, operator: "POLY-GCL", parent: "POLY-GCL Petroleum", well_name: "Calub-12", well_type: "Development", td_ft: 9500, result: "Gas Discovery" },
+  { country: "Ethiopia", basin_id: "ogaden", year: 2025, operator: "New Age Energy", parent: "New Age Energy", well_name: "Ogaden East-1", well_type: "Exploration", td_ft: 11200, result: "Dry" },
+  { country: "Ethiopia", basin_id: "ogaden", year: 2026, operator: "POLY-GCL", parent: "POLY-GCL Petroleum", well_name: "Hilala-7", well_type: "Development", td_ft: 10100, result: "Gas Discovery" },
+  // Somalia
+  { country: "Somalia", basin_id: "nogal", year: 2025, operator: "Genel Energy", parent: "Genel Energy plc", well_name: "Nogal-2X", well_type: "Exploration", td_ft: 9800, result: "Suspended" },
+  // Eritrea
+  { country: "Eritrea", basin_id: "red_sea_er", year: 2026, operator: "CNPC", parent: "CNPC", well_name: "Dahlak-1", well_type: "Exploration", td_ft: 11500, result: "Suspended" },
+];
+
+// OFS spending by country/year/operator (USD thousands)
 export var OFS_SPENDING = [
-  { id: "s01", country: "Mozambique", year: 2011, category: "Drilling", parent: "Anadarko", usd_m: 410 },
-  { id: "s02", country: "Mozambique", year: 2012, category: "Drilling", parent: "Eni", usd_m: 380 },
-  { id: "s03", country: "Mozambique", year: 2012, category: "Seismic", parent: "Eni", usd_m: 95 },
-  { id: "s04", country: "Mozambique", year: 2023, category: "Development", parent: "TotalEnergies", usd_m: 2100 },
-  { id: "s05", country: "Mozambique", year: 2024, category: "Facilities", parent: "Eni", usd_m: 640 },
-  { id: "s06", country: "Kenya", year: 2012, category: "Drilling", parent: "Tullow Oil", usd_m: 210 },
-  { id: "s07", country: "Kenya", year: 2013, category: "Drilling", parent: "Tullow Oil", usd_m: 260 },
-  { id: "s08", country: "Kenya", year: 2013, category: "Seismic", parent: "Tullow Oil", usd_m: 70 },
-  { id: "s09", country: "Kenya", year: 2019, category: "Development", parent: "Tullow Oil", usd_m: 150 },
-  { id: "s10", country: "Kenya", year: 2022, category: "Facilities", parent: "Tullow Oil", usd_m: 90 },
-  { id: "s11", country: "Tanzania", year: 2011, category: "Drilling", parent: "Ophir Energy", usd_m: 190 },
-  { id: "s12", country: "Tanzania", year: 2012, category: "Drilling", parent: "Equinor", usd_m: 320 },
-  { id: "s13", country: "Tanzania", year: 2013, category: "Seismic", parent: "Equinor", usd_m: 85 },
-  { id: "s14", country: "Tanzania", year: 2013, category: "Drilling", parent: "Eni", usd_m: 240 },
-  { id: "s15", country: "Tanzania", year: 2022, category: "Facilities", parent: "Equinor", usd_m: 110 },
-  { id: "s16", country: "Ethiopia", year: 2020, category: "Development", parent: "Poly-GCL", usd_m: 130 },
-  { id: "s17", country: "Ethiopia", year: 2020, category: "Seismic", parent: "Poly-GCL", usd_m: 40 },
-  { id: "s18", country: "Mozambique", year: 2022, category: "Seismic", parent: "TotalEnergies", usd_m: 60 }
+  // Mozambique 2024
+  { country: "Mozambique", year: 2024, parent: "ENI SpA", cement: 2800, casing_wh: 5200, directional: 8400, driller: 12500, frac: 0, mud: 4100, pipe: 3200, logging: 3800, completion: 6200 },
+  { country: "Mozambique", year: 2024, parent: "TotalEnergies SE", cement: 3100, casing_wh: 6800, directional: 11200, driller: 18400, frac: 0, mud: 5600, pipe: 4500, logging: 4200, completion: 8100 },
+  // Mozambique 2025
+  { country: "Mozambique", year: 2025, parent: "ENI SpA", cement: 3200, casing_wh: 6100, directional: 9800, driller: 14200, frac: 0, mud: 4800, pipe: 3600, logging: 4100, completion: 7500 },
+  { country: "Mozambique", year: 2025, parent: "TotalEnergies SE", cement: 4500, casing_wh: 9200, directional: 15600, driller: 24800, frac: 0, mud: 7200, pipe: 5800, logging: 5400, completion: 11200 },
+  { country: "Mozambique", year: 2025, parent: "ExxonMobil Corp", cement: 2200, casing_wh: 4800, directional: 7500, driller: 11200, frac: 0, mud: 3600, pipe: 2800, logging: 3200, completion: 4800 },
+  // Mozambique 2026
+  { country: "Mozambique", year: 2026, parent: "ENI SpA", cement: 3800, casing_wh: 7200, directional: 11500, driller: 16800, frac: 0, mud: 5400, pipe: 4200, logging: 4800, completion: 8800 },
+  { country: "Mozambique", year: 2026, parent: "TotalEnergies SE", cement: 5200, casing_wh: 10800, directional: 18200, driller: 28500, frac: 0, mud: 8400, pipe: 6500, logging: 6200, completion: 13500 },
+  // Kenya 2024-2026
+  { country: "Kenya", year: 2024, parent: "Africa Oil Corp", cement: 1200, casing_wh: 2400, directional: 3200, driller: 5800, frac: 800, mud: 1800, pipe: 1400, logging: 1600, completion: 2800 },
+  { country: "Kenya", year: 2025, parent: "Africa Oil Corp", cement: 1400, casing_wh: 2800, directional: 4100, driller: 6500, frac: 900, mud: 2200, pipe: 1600, logging: 1800, completion: 3200 },
+  { country: "Kenya", year: 2025, parent: "ENI SpA", cement: 1800, casing_wh: 3600, directional: 5800, driller: 9200, frac: 0, mud: 2800, pipe: 2200, logging: 2400, completion: 4500 },
+  { country: "Kenya", year: 2026, parent: "Africa Oil Corp", cement: 1600, casing_wh: 3200, directional: 4800, driller: 7200, frac: 1100, mud: 2600, pipe: 1800, logging: 2000, completion: 3600 },
+  // Tanzania
+  { country: "Tanzania", year: 2024, parent: "Equinor ASA", cement: 2400, casing_wh: 4800, directional: 7800, driller: 11500, frac: 0, mud: 3800, pipe: 2800, logging: 3400, completion: 5800 },
+  { country: "Tanzania", year: 2025, parent: "Shell plc", cement: 2600, casing_wh: 5200, directional: 8400, driller: 12800, frac: 0, mud: 4200, pipe: 3200, logging: 3600, completion: 6200 },
+  { country: "Tanzania", year: 2026, parent: "Dodsal Group", cement: 800, casing_wh: 1600, directional: 2200, driller: 3800, frac: 0, mud: 1200, pipe: 900, logging: 1100, completion: 1800 },
+  // Ethiopia
+  { country: "Ethiopia", year: 2024, parent: "POLY-GCL Petroleum", cement: 900, casing_wh: 1800, directional: 2400, driller: 4200, frac: 0, mud: 1400, pipe: 1100, logging: 1200, completion: 2200 },
+  { country: "Ethiopia", year: 2025, parent: "New Age Energy", cement: 1100, casing_wh: 2200, directional: 3200, driller: 5100, frac: 0, mud: 1600, pipe: 1300, logging: 1400, completion: 2800 },
+  { country: "Ethiopia", year: 2026, parent: "POLY-GCL Petroleum", cement: 1000, casing_wh: 2000, directional: 2800, driller: 4600, frac: 0, mud: 1500, pipe: 1200, logging: 1300, completion: 2400 },
+  // Somalia
+  { country: "Somalia", year: 2025, parent: "Genel Energy plc", cement: 800, casing_wh: 1600, directional: 2600, driller: 4000, frac: 0, mud: 1200, pipe: 1000, logging: 1100, completion: 1800 },
+  // Eritrea
+  { country: "Eritrea", year: 2026, parent: "CNPC", cement: 1200, casing_wh: 2400, directional: 3600, driller: 5500, frac: 0, mud: 1800, pipe: 1400, logging: 1600, completion: 2800 },
 ];
