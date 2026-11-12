@@ -1,4 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import FieldNotes from "./components/FieldNotes";
+import OFSMetrics from "./components/OFSMetrics";
+import DataSources from "./components/DataSources";
+import { useWatchlist, Star } from "./components/Watchlist";
+import { Dashboard, Library } from "./components/Pages";
+import Forecasts from "./components/Forecasts";
+import { useFieldSignals, SignalBadge, SignalPanel } from "./components/Signals";
+import { DevReadiness } from "./components/InfraOverlay";
+import MapPanel from "./components/MapGL";
 import BasinViewer3D from "./components/BasinViewer3D";
 import BasinContourMap from "./components/BasinContourMap";
 import WellLogViewer from "./components/WellLogViewer";
@@ -46,8 +55,22 @@ const NAV_ITEMS = [
   {id:"dash",label:"Dashboard",icon:<Ico sz={17} c="inherit"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></Ico>},
   {id:"map",label:"Basin Map",icon:<Ico sz={17} c="inherit"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></Ico>},
   {id:"lib",label:"Data Library",icon:<Ico sz={17} c="inherit"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></Ico>},
-  {id:"fore",label:"Forecasts",icon:<Ico sz={17} c="inherit"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Ico>,soon:true},
+  {id:"notes",label:"Field Notes",icon:<Ico sz={17} c="inherit"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></Ico>},
+  {id:"ofs",label:"OFS Metrics",icon:<Ico sz={17} c="inherit"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></Ico>},
+  {id:"sources",label:"Data & Sources",icon:<Ico sz={17} c="inherit"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></Ico>},
+  {id:"fore",label:"Forecasts",icon:<Ico sz={17} c="inherit"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Ico>},
 ];
+
+// ── PAGE META
+const PAGE_META = {
+  dash:{title:"Dashboard",crumb:"Overview \u00B7 East Africa & Horn of Africa Region"},
+  map:{title:"Basin Map",crumb:"Basins \u00B7 East Africa & Horn of Africa Region"},
+  lib:{title:"Data Library",crumb:"Reference data \u00B7 East Africa & Horn of Africa Region"},
+  notes:{title:"Field Notes",crumb:"Curated E&P news \u00B7 East Africa & Horn of Africa Region"},
+  ofs:{title:"OFS Metrics",crumb:"Wells and spending \u00B7 East Africa & Horn of Africa Region"},
+  sources:{title:"Data & Sources",crumb:"Provenance and limits \u00B7 every dataset in GeoIndex"},
+  fore:{title:"Forecasts",crumb:"Monte Carlo volumetrics"}
+};
 
 // ── SIDEBAR
 function Sidebar({active,onNav}) {
@@ -105,170 +128,15 @@ function KPIs({data}) {
   );
 }
 
-// ── MAP (Leaflet-based with real terrain tiles)
-function MapPanel({data,sel,onSel}) {
-  const mapContainer = useRef(null);
-  const mapRef = useRef(null);
-  const markersRef = useRef([]);
-  const [leafletReady, setLeafletReady] = useState(false);
-
-  // Load Leaflet CSS + JS
-  useEffect(() => {
-    if (document.getElementById('leaflet-css')) { setLeafletReady(true); return; }
-    const css = document.createElement('link');
-    css.id = 'leaflet-css';
-    css.rel = 'stylesheet';
-    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-    document.head.appendChild(css);
-    const js = document.createElement('script');
-    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-    js.onload = () => setLeafletReady(true);
-    document.head.appendChild(js);
-  }, []);
-
-  // Initialize map
-  useEffect(() => {
-    if (!leafletReady || !mapContainer.current || mapRef.current) return;
-    const L = window.L;
-    const map = L.map(mapContainer.current, {
-      center: [0, 39],
-      zoom: 4,
-      zoomControl: false,
-      attributionControl: false,
-      minZoom: 3,
-      maxZoom: 10,
-    });
-
-    // Terrain tile layer — OpenTopoMap for that rich cartographic look
-    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      maxZoom: 17,
-    }).addTo(map);
-
-    // Zoom control bottom-right
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    // Attribution
-    L.control.attribution({ position: 'bottomleft', prefix: false })
-      .addAttribution('© OpenTopoMap · © OpenStreetMap')
-      .addTo(map);
-
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, [leafletReady]);
-
-  // Update markers when data or selection changes
-  useEffect(() => {
-    if (!mapRef.current || !window.L) return;
-    const L = window.L;
-    const map = mapRef.current;
-
-    // Clear old markers
-    markersRef.current.forEach(m => map.removeLayer(m));
-    markersRef.current = [];
-
-    data.forEach(b => {
-      const c = STATUS_CLR[b.status];
-      const isSel = sel?.id === b.id;
-      const radius = Math.max(6, Math.min(18, Math.sqrt(b.area_km2 / 800)));
-
-      const marker = L.circleMarker([b.lat, b.lng], {
-        radius: isSel ? radius + 4 : radius,
-        fillColor: c,
-        color: isSel ? '#fff' : c,
-        weight: isSel ? 3 : 1.5,
-        opacity: 1,
-        fillOpacity: isSel ? 0.85 : 0.6,
-      }).addTo(map);
-
-      // Tooltip
-      marker.bindTooltip(
-        `<div style="font-family:Inter,sans-serif;font-size:12px;line-height:1.5;">
-          <strong style="color:#1e293b;">${b.name}</strong><br/>
-          <span style="color:#475569;">${b.country} · ${b.status}</span><br/>
-          <span style="color:#92400e;font-weight:600;">Oil P50: ${b.estimated_oil_mmbo.p50.toLocaleString()} MMBO</span><br/>
-          <span style="color:#1e40af;font-weight:600;">Gas P50: ${b.estimated_gas_tcf.p50.toLocaleString()} Tcf</span>
-        </div>`,
-        { direction: 'top', offset: [0, -radius], className: 'geo-tooltip' }
-      );
-
-      marker.on('click', () => onSel(b));
-
-      // Pulsing ring for selected
-      if (isSel) {
-        const pulse = L.circleMarker([b.lat, b.lng], {
-          radius: radius + 10,
-          fillColor: 'transparent',
-          color: c,
-          weight: 1.5,
-          opacity: 0.4,
-          dashArray: '4,4',
-        }).addTo(map);
-        markersRef.current.push(pulse);
-      }
-
-      markersRef.current.push(marker);
-    });
-  }, [data, sel, onSel]);
-
-  // Fly to selected basin
-  useEffect(() => {
-    if (!mapRef.current || !sel) return;
-    mapRef.current.flyTo([sel.lat, sel.lng], 6, { duration: 0.8 });
-  }, [sel]);
-
-  return (
-    <div style={S.card}>
-      <div style={S.cardHead}><span style={S.cardLabel}>Basin Map</span><span style={S.cardBadge}>{data.length} results</span></div>
-      <style>{`
-        .geo-tooltip {
-          background: rgba(15,23,42,0.92) !important;
-          border: 1px solid rgba(51,65,85,0.6) !important;
-          border-radius: 8px !important;
-          padding: 8px 12px !important;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
-          color: #e2e8f0 !important;
-        }
-        .geo-tooltip .leaflet-tooltip-tip {
-          border-top-color: rgba(15,23,42,0.92) !important;
-        }
-        .leaflet-control-zoom a {
-          background: rgba(15,23,42,0.85) !important;
-          color: #94a3b8 !important;
-          border-color: #1e293b !important;
-        }
-        .leaflet-control-zoom a:hover {
-          background: #1e293b !important;
-          color: #e2e8f0 !important;
-        }
-        .leaflet-control-attribution {
-          background: rgba(15,23,42,0.7) !important;
-          color: #475569 !important;
-          font-size: 9px !important;
-        }
-        .leaflet-control-attribution a { color: #64748b !important; }
-      `}</style>
-      <div ref={mapContainer} style={{width:'100%', height:520, borderRadius:'0 0 12px 12px', background:'#0b1120'}} />
-      <div style={S.legendRow}>
-        {Object.entries(STATUS_CLR).map(([s,c])=>(
-          <div key={s} style={{display:"flex",alignItems:"center",gap:5}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:c,boxShadow:`0 0 6px ${c}50`}}/>
-            <span style={{fontSize:10,color:"#94a3b8"}}>{s}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── TABLE
-function Table({data,sel,onSel}) {
+function Table({data,sel,onSel,sig,wl}) {
   return (
     <div style={{...S.card,overflow:"hidden",display:"flex",flexDirection:"column",minHeight:0}}>
       <div style={S.cardHead}><span style={S.cardLabel}>Basin Library</span></div>
       <div style={{overflowY:"auto",flex:1}}>
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
           <thead>
-            <tr>{["Basin","Country","Type","Status","Oil P50","Gas P50","Wells"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr>
+            <tr>{["Basin","Country","Type","Status","Oil P50","Gas P50","Wells","News"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr>
           </thead>
           <tbody>
             {data.map(b=>{
@@ -276,13 +144,14 @@ function Table({data,sel,onSel}) {
               return(
                 <tr key={b.id} onClick={()=>onSel(b)} style={{background:is?"#1a2540":"transparent",cursor:"pointer",borderBottom:"1px solid #1e293b20",transition:"background .12s"}}
                   onMouseEnter={e=>{if(!is)e.currentTarget.style.background="#111c30"}} onMouseLeave={e=>{if(!is)e.currentTarget.style.background="transparent"}}>
-                  <td style={S.td}><span style={{fontWeight:600,color:"#e2e8f0"}}>{b.name}</span></td>
+                  <td style={S.td}><Star on={wl.has(b.name)} onClick={()=>wl.toggle(b.name)} size={13}/> <span style={{fontWeight:600,color:"#e2e8f0"}}>{b.name}</span></td>
                   <td style={S.td}><span style={{marginRight:3}}>{FLAG[b.country]}</span>{b.country}</td>
                   <td style={S.td}>{b.type}</td>
                   <td style={S.td}><span style={{...S.pill,color:STATUS_CLR[b.status],background:`${STATUS_CLR[b.status]}15`,border:`1px solid ${STATUS_CLR[b.status]}28`}}>{b.status}</span></td>
                   <td style={{...S.td,fontVariantNumeric:"tabular-nums"}}><span style={{color:"#fbbf24",fontWeight:600}}>{b.estimated_oil_mmbo.p50.toLocaleString()}</span><span style={{color:"#475569",fontSize:10,marginLeft:3}}>MMBO</span></td>
                   <td style={{...S.td,fontVariantNumeric:"tabular-nums"}}><span style={{color:"#60a5fa",fontWeight:600}}>{b.estimated_gas_tcf.p50.toLocaleString()}</span><span style={{color:"#475569",fontSize:10,marginLeft:3}}>Tcf</span></td>
                   <td style={{...S.td,textAlign:"center"}}>{b.wells_drilled}</td>
+                  <td style={S.td}><SignalBadge basin={b} data={sig}/></td>
                 </tr>
               );
             })}
@@ -294,20 +163,19 @@ function Table({data,sel,onSel}) {
 }
 
 // ── DETAIL DRAWER
-var VIEW_MODES = [
-  {id:"detail",label:"Detail",icon:"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"},
-  {id:"contour",label:"Contour",icon:"M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"},
-  {id:"welllog",label:"Well Log",icon:"M22 12h-4l-3 9L9 3l-3 9H2"},
-  {id:"block3d",label:"3D Block",icon:"M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"},
+const VIEW_MODES = [
+  {id:"detail",label:"Detail",color:"#e2e8f0",icon:"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"},
+  {id:"contour",label:"Contour",color:"#34d399",icon:"M3 12c3-6 6 6 9 0s6 6 9 0M3 6c3-4 6 4 9 0s6 4 9 0M3 18c3-4 6 4 9 0s6 4 9 0"},
+  {id:"welllog",label:"Well Log",color:"#60a5fa",icon:"M22 12h-4l-3 9L9 3l-3 9H2"},
+  {id:"block3d",label:"3D Block",color:"#a78bfa",icon:"M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"},
 ];
 
-function Drawer({basin:b,onClose}) {
+function Drawer({basin:b,onClose,sig,wl}) {
   const [viewMode,setViewMode]=useState("detail");
-  // Reset to detail when basin changes
   useEffect(()=>{setViewMode("detail");},[b?.id]);
   if(!b) return null;
   const c=STATUS_CLR[b.status];
-  const isViz = viewMode !== "detail";
+  const isViz=viewMode!=="detail";
   const Bar=({label,p90,p50,p10,unit,accent})=>{const mx=p10*1.15;return(
     <div style={{marginBottom:18}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
@@ -333,46 +201,26 @@ function Drawer({basin:b,onClose}) {
               <span style={{...S.pill,color:c,background:`${c}15`,border:`1px solid ${c}28`}}>{b.status}</span>
               <span style={{fontSize:11,color:"#475569"}}>{FLAG[b.country]} {b.country}</span>
             </div>
-            <h2 style={{margin:0,fontSize:22,fontWeight:700,color:"#f1f5f9"}}>{b.name}</h2>
+            <h2 style={{margin:0,fontSize:22,fontWeight:700,color:"#f1f5f9"}}><Star on={wl.has(b.name)} onClick={()=>wl.toggle(b.name)} size={20}/> {b.name}</h2>
             <div style={{fontSize:12,color:"#475569",marginTop:3}}>{b.type} Basin</div>
           </div>
           <button onClick={onClose} style={S.xBtn}><Ico sz={15} c="#64748b"><path d="M18 6L6 18M6 6l12 12"/></Ico></button>
         </div>
-
-        {/* View mode toggle bar */}
         <div style={{display:"flex",gap:4,marginBottom:16,padding:3,background:"#091019",borderRadius:8,border:"1px solid #1a2338"}}>
-          {VIEW_MODES.map(function(m){
-            var active = viewMode===m.id;
-            return(
-              <button key={m.id} onClick={function(){setViewMode(m.id)}} style={{
-                flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-                padding:"7px 6px",borderRadius:6,border:"none",cursor:"pointer",
-                fontSize:10,fontWeight:600,fontFamily:"inherit",
-                background:active?"#1a2338":"transparent",
-                color:active?"#e2e8f0":"#475569",
-                transition:"all .15s",
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={active?(m.id==="contour"?"#34d399":m.id==="welllog"?"#60a5fa":m.id==="block3d"?"#a78bfa":"#e2e8f0"):"#475569"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon}/></svg>
-                {m.label}
-              </button>
-            );
-          })}
+          {VIEW_MODES.map(m=>{const on=viewMode===m.id;return(
+            <button key={m.id} onClick={()=>setViewMode(m.id)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"7px 6px",borderRadius:6,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"inherit",background:on?"#1a2338":"transparent",color:on?"#e2e8f0":"#475569",transition:"all .15s"}}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={on?m.color:"#475569"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon}/></svg>
+              {m.label}
+            </button>
+          );})}
         </div>
-
-        {viewMode === "contour" ? (
-          <div style={{height:"calc(100vh - 180px)"}}>
-            <BasinContourMap basin={b}/>
-          </div>
-        ) : viewMode === "welllog" ? (
-          <div style={{height:"calc(100vh - 180px)"}}>
-            <WellLogViewer basin={b}/>
-          </div>
-        ) : viewMode === "block3d" ? (
-          <div style={{height:"calc(100vh - 180px)"}}>
-            <BasinViewer3D basin={b}/>
-          </div>
-        ) : (
-        <>
+        {viewMode==="contour"?(
+          <div style={{height:"calc(100vh - 200px)"}}><BasinContourMap basin={b}/></div>
+        ):viewMode==="welllog"?(
+          <div style={{height:"calc(100vh - 200px)"}}><WellLogViewer basin={b}/></div>
+        ):viewMode==="block3d"?(
+          <div style={{height:"calc(100vh - 200px)"}}><BasinViewer3D basin={b}/></div>
+        ):(<>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
           {[{l:"Area",v:`${b.area_km2.toLocaleString()} km\u00B2`},{l:"Depth",v:`${b.depth_m[0]}\u2013${b.depth_m[1]}m`},{l:"Wells",v:b.wells_drilled},{l:"Discovery",v:b.discovery_year||"\u2014"}].map(s=>(
             <div key={s.l} style={S.statBox}><div style={{fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:".04em"}}>{s.l}</div><div style={{fontSize:16,fontWeight:700,color:"#e2e8f0",marginTop:2}}>{s.v}</div></div>
@@ -383,6 +231,8 @@ function Drawer({basin:b,onClose}) {
           <Bar label="Recoverable Oil" p90={b.estimated_oil_mmbo.p90} p50={b.estimated_oil_mmbo.p50} p10={b.estimated_oil_mmbo.p10} unit="MMBO" accent="#fbbf24"/>
           <Bar label="Recoverable Gas" p90={b.estimated_gas_tcf.p90} p50={b.estimated_gas_tcf.p50} p10={b.estimated_gas_tcf.p10} unit="Tcf" accent="#60a5fa"/>
         </div>
+        <SignalPanel basin={b} data={sig}/>
+        <DevReadiness basin={b}/>
         <div style={{marginBottom:14}}>
           <div style={S.secTitle}>Key Formations</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:5}}>{b.formations.map(f=><span key={f} style={S.tag}>{f}</span>)}</div>
@@ -396,8 +246,7 @@ function Drawer({basin:b,onClose}) {
           <p style={{margin:0,fontSize:13,color:"#94a3b8",lineHeight:1.7}}>{b.notes}</p>
         </div>
         <div style={{fontSize:10,color:"#334155",borderTop:"1px solid #1e293b",paddingTop:12}}>Source: {b.source}</div>
-        </>
-        )}
+        </>)}
       </div>
     </div>
   );
@@ -410,14 +259,18 @@ export default function App() {
   const [ctry,setCtry]=useState("All");
   const [stat,setStat]=useState("All");
   const [sel,setSel]=useState(null);
+  const sig=useFieldSignals();
+  const wl=useWatchlist();
+  const [onlyWatch,setOnlyWatch]=useState(false);
 
   const filtered=useMemo(()=>{
     let r=BASINS;
     if(q){const lq=q.toLowerCase();r=r.filter(b=>b.name.toLowerCase().includes(lq)||b.formations.some(f=>f.toLowerCase().includes(lq))||b.plays.some(p=>p.toLowerCase().includes(lq))||b.notes.toLowerCase().includes(lq));}
     if(ctry!=="All")r=r.filter(b=>b.country===ctry);
     if(stat!=="All")r=r.filter(b=>b.status===stat);
+    if(onlyWatch)r=r.filter(b=>wl.names.indexOf(b.name)>=0);
     return r;
-  },[q,ctry,stat]);
+  },[q,ctry,stat,onlyWatch,wl.names]);
 
   return(
     <div style={S.root}>
@@ -433,28 +286,32 @@ export default function App() {
         {/* Top bar */}
         <header style={S.header}>
           <div style={S.headerLeft}>
-            <h1 style={S.pageTitle}>Dashboard</h1>
-            <span style={S.breadcrumb}>Overview · East Africa & Horn of Africa Region</span>
+            <h1 style={S.pageTitle}>{(PAGE_META[page]||PAGE_META.dash).title}</h1>
+            <span style={S.breadcrumb}>{(PAGE_META[page]||PAGE_META.dash).crumb}</span>
           </div>
-          <div style={S.headerRight}>
+          {page!=="notes"&&page!=="ofs"&&page!=="sources"&&page!=="fore"&&<div style={S.headerRight}>
             <div style={S.searchWrap}>
               <Ico sz={14} c="#475569"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></Ico>
               <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search basins, formations..." style={S.searchIn}/>
             </div>
             <select value={ctry} onChange={e=>setCtry(e.target.value)} style={S.sel}>{COUNTRIES.map(c=><option key={c} value={c} style={{background:"#0f172a"}}>{c==="All"?"All Countries":c}</option>)}</select>
+            <button onClick={()=>setOnlyWatch(!onlyWatch)} style={{...S.sel,minWidth:0,color:onlyWatch?"#fbbf24":"#94a3b8",borderColor:onlyWatch?"#fbbf2450":"#1e2d45"}}>{"\u2605"} Watchlist{wl.names.length>0?" ("+wl.names.length+")":""}</button>
             <select value={stat} onChange={e=>setStat(e.target.value)} style={S.sel}>{STATUSES.map(s=><option key={s} value={s} style={{background:"#0f172a"}}>{s==="All"?"All Status":s}</option>)}</select>
-          </div>
+          </div>}
         </header>
         {/* Content */}
+        {(page==="notes"||page==="ofs"||page==="sources"||page==="fore")?(
+        <div style={S.body}>{page==="notes"?<FieldNotes/>:page==="ofs"?<OFSMetrics/>:page==="fore"?<Forecasts basins={BASINS}/>:<DataSources/>}</div>
+        ):(
         <div style={S.body}>
-          <KPIs data={filtered}/>
-          <div style={S.grid2}>
-            <MapPanel data={filtered} sel={sel} onSel={setSel}/>
-            <Table data={filtered} sel={sel} onSel={setSel}/>
-          </div>
+          {page==="dash"&&<KPIs data={filtered}/>}
+          {page==="dash"&&<Dashboard data={filtered} all={BASINS} sig={sig} wl={wl} onSel={setSel}/>}
+          {page==="map"&&<MapPanel data={filtered} sel={sel} onSel={setSel} height="calc(100vh - 220px)"/>}
+          {page==="lib"&&<Library data={filtered} sel={sel} onSel={setSel} sig={sig} wl={wl}/>}
         </div>
+        )}
       </main>
-      <Drawer basin={sel} onClose={()=>setSel(null)}/>
+      <Drawer basin={sel} onClose={()=>setSel(null)} sig={sig} wl={wl}/>
     </div>
   );
 }
@@ -518,7 +375,7 @@ const S={
   pill:{fontSize:10,fontWeight:600,padding:"3px 9px",borderRadius:6,display:"inline-block"},
 
   // drawer
-  drawer:{position:"fixed",top:0,right:0,bottom:0,width:420,background:"#0c1322",borderLeft:"1px solid #1a2338",zIndex:200,overflowY:"auto",animation:"slideIn .22s ease-out",boxShadow:"-12px 0 40px rgba(0,0,0,.5)"},
+  drawer:{position:"fixed",top:0,right:0,bottom:0,width:420,background:"#0c1322",borderLeft:"1px solid #1a2338",zIndex:2000,overflowY:"auto",animation:"slideIn .22s ease-out",boxShadow:"-12px 0 40px rgba(0,0,0,.5)"},
   drawerInner:{padding:26},
   xBtn:{background:"#111b2e",border:"1px solid #1e2d45",borderRadius:8,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"},
 

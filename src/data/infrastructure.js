@@ -1,190 +1,156 @@
-// Infrastructure data for GeoIndex planning overlays
-// Sources: World Bank AICD, AfTS-Db (Oxford/nismod), Energydata.info, operator disclosures
-// Coverage: 7 target countries + key regional context
+// Regional infrastructure for development-readiness screening.
+// ALL COORDINATES ARE APPROXIMATE and pipeline, power and road routes are SCHEMATIC polylines.
+// Status values reflect general knowledge and may be out of date. Verify before relying on them.
 
-export const INFRA_LAYERS = [
-  { key: "none", label: "None" },
-  { key: "ports", label: "Ports & Terminals", icon: "⚓", color: "#42a5f5" },
-  { key: "airports", label: "Airports", icon: "✈", color: "#ab47bc" },
-  { key: "pipelines", label: "Pipelines & LNG", icon: "⛽", color: "#ef5350" },
-  { key: "power", label: "Power Grid", icon: "⚡", color: "#ffa726" },
-  { key: "roads", label: "Major Roads", icon: "🛣", color: "#78909c" },
+export var INFRA_LAYERS = [
+  { id: "ports", label: "Ports", color: "#60a5fa" },
+  { id: "airports", label: "Airports", color: "#e2e8f0" },
+  { id: "pipelines", label: "Pipelines", color: "#fbbf24" },
+  { id: "power", label: "Power lines", color: "#f472b6" },
+  { id: "roads", label: "Road corridors", color: "#34d399" }
 ];
 
-// ═══════════════════════════════════════════════════════════════
-// PORTS — deepwater, LNG terminals, oil export terminals
-// ═══════════════════════════════════════════════════════════════
-export const PORTS = [
-  // Kenya
-  { id: "p_mombasa", name: "Mombasa Port", country: "Kenya", lat: -4.04, lng: 39.66, type: "deepwater", capacity_mt: 34, notes: "East Africa's largest port. Container & bulk." },
-  { id: "p_lamu", name: "Lamu Port (LAPSSET)", country: "Kenya", lat: -2.27, lng: 40.90, type: "deepwater", capacity_mt: 5, notes: "New deepwater port, Phase 1 operational. LAPSSET corridor." },
-  // Tanzania
-  { id: "p_dar", name: "Dar es Salaam Port", country: "Tanzania", lat: -6.83, lng: 39.29, type: "deepwater", capacity_mt: 16, notes: "Tanzania's main port. Handles 90% of trade." },
-  { id: "p_tanga", name: "Tanga Port", country: "Tanzania", lat: -5.07, lng: 39.10, type: "secondary", capacity_mt: 1, notes: "Secondary port, sisal/agricultural exports." },
-  { id: "p_mtwara", name: "Mtwara Port", country: "Tanzania", lat: -10.27, lng: 40.18, type: "secondary", capacity_mt: 0.5, notes: "Southern Tanzania. Near Mnazi Bay gas." },
-  // Mozambique
-  { id: "p_maputo", name: "Maputo Port", country: "Mozambique", lat: -25.97, lng: 32.57, type: "deepwater", capacity_mt: 20, notes: "Major container & coal export terminal." },
-  { id: "p_beira", name: "Beira Port", country: "Mozambique", lat: -19.84, lng: 34.87, type: "deepwater", capacity_mt: 12, notes: "Central Mozambique corridor hub." },
-  { id: "p_nacala", name: "Nacala Port", country: "Mozambique", lat: -14.54, lng: 40.69, type: "deepwater", capacity_mt: 5, notes: "Natural deepwater harbor. Coal rail link." },
-  { id: "p_pemba_mz", name: "Pemba Port", country: "Mozambique", lat: -12.97, lng: 40.52, type: "support_base", capacity_mt: 1, notes: "Rovuma LNG offshore support base." },
-  { id: "p_palma", name: "Afungi LNG Terminal", country: "Mozambique", lat: -10.75, lng: 40.38, type: "lng", capacity_mt: 15, notes: "TotalEnergies/ENI Mozambique LNG site." },
-  // Ethiopia (landlocked — uses Djibouti)
-  { id: "p_djibouti", name: "Doraleh Port", country: "Djibouti", lat: 11.60, lng: 43.13, type: "deepwater", capacity_mt: 25, notes: "Ethiopia's primary maritime gateway. Multi-purpose." },
-  { id: "p_djibouti_lng", name: "Djibouti LNG Terminal", country: "Djibouti", lat: 11.55, lng: 43.10, type: "lng", capacity_mt: 3, notes: "Planned LNG import/export facility." },
-  // Somalia
-  { id: "p_mogadishu", name: "Mogadishu Port", country: "Somalia", lat: 2.03, lng: 45.35, type: "secondary", capacity_mt: 3, notes: "Main Somali port. Limited capacity." },
-  { id: "p_berbera", name: "Berbera Port", country: "Somalia", lat: 10.44, lng: 45.02, type: "deepwater", capacity_mt: 8, notes: "DP World modernized. Somaliland corridor." },
-  { id: "p_bosaso", name: "Bosaso Port", country: "Somalia", lat: 11.28, lng: 49.18, type: "secondary", capacity_mt: 1, notes: "Puntland's main port." },
-  // Eritrea
-  { id: "p_massawa", name: "Massawa Port", country: "Eritrea", lat: 15.61, lng: 39.45, type: "secondary", capacity_mt: 2, notes: "Red Sea port. Limited modern infrastructure." },
-  { id: "p_assab", name: "Assab Port", country: "Eritrea", lat: 13.01, lng: 42.74, type: "secondary", capacity_mt: 1, notes: "Southern Red Sea. UAE military base nearby." },
-  // Rwanda (landlocked — nearest port context)
-  { id: "p_kigali_dryport", name: "Kigali Dry Port", country: "Rwanda", lat: -1.97, lng: 30.10, type: "dry_port", capacity_mt: 0.5, notes: "Inland container depot. Links to Dar/Mombasa." },
+export var INFRA = {
+  ports: [
+    { name: "Mombasa", country: "Kenya", pos: [-4.05, 39.67] },
+    { name: "Lamu", country: "Kenya", pos: [-2.27, 40.90] },
+    { name: "Kisumu", country: "Kenya", pos: [-0.10, 34.75] },
+    { name: "Dar es Salaam", country: "Tanzania", pos: [-6.82, 39.29] },
+    { name: "Tanga", country: "Tanzania", pos: [-5.07, 39.10] },
+    { name: "Mtwara", country: "Tanzania", pos: [-10.27, 40.18] },
+    { name: "Pemba", country: "Mozambique", pos: [-12.97, 40.52] },
+    { name: "Nacala", country: "Mozambique", pos: [-14.54, 40.69] },
+    { name: "Beira", country: "Mozambique", pos: [-19.83, 34.84] },
+    { name: "Maputo", country: "Mozambique", pos: [-25.97, 32.57] },
+    { name: "Afungi (LNG site)", country: "Mozambique", pos: [-10.80, 40.50] },
+    { name: "Berbera", country: "Somalia", pos: [10.44, 45.01] },
+    { name: "Mogadishu", country: "Somalia", pos: [2.03, 45.34] },
+    { name: "Bosaso", country: "Somalia", pos: [11.28, 49.18] },
+    { name: "Kismayo", country: "Somalia", pos: [-0.36, 42.55] },
+    { name: "Djibouti (serves Ethiopia)", country: "Djibouti", pos: [11.59, 43.15] },
+    { name: "Massawa", country: "Eritrea", pos: [15.61, 39.45] },
+    { name: "Assab", country: "Eritrea", pos: [13.01, 42.74] }
+  ],
+  airports: [
+    { name: "Nairobi (JKIA)", country: "Kenya", pos: [-1.32, 36.93] },
+    { name: "Mombasa (Moi)", country: "Kenya", pos: [-4.03, 39.59] },
+    { name: "Lodwar", country: "Kenya", pos: [3.12, 35.61] },
+    { name: "Lamu (Manda)", country: "Kenya", pos: [-2.25, 40.91] },
+    { name: "Dar es Salaam (Nyerere)", country: "Tanzania", pos: [-6.88, 39.20] },
+    { name: "Kilimanjaro", country: "Tanzania", pos: [-3.43, 37.07] },
+    { name: "Mtwara", country: "Tanzania", pos: [-10.34, 40.18] },
+    { name: "Pemba", country: "Mozambique", pos: [-12.99, 40.52] },
+    { name: "Maputo", country: "Mozambique", pos: [-25.92, 32.57] },
+    { name: "Beira", country: "Mozambique", pos: [-19.80, 34.91] },
+    { name: "Addis Ababa (Bole)", country: "Ethiopia", pos: [8.98, 38.80] },
+    { name: "Mogadishu (Aden Adde)", country: "Somalia", pos: [2.01, 45.31] },
+    { name: "Hargeisa", country: "Somalia", pos: [9.52, 44.09] },
+    { name: "Kigali", country: "Rwanda", pos: [-1.97, 30.14] },
+    { name: "Asmara", country: "Eritrea", pos: [15.29, 38.91] }
+  ],
+  pipelines: [
+    { name: "EACOP (Hoima to Tanga)", status: "Construction or commissioning", pts: [[1.43, 31.35], [0.0, 31.6], [-1.5, 31.9], [-3.2, 33.2], [-4.8, 35.0], [-5.0, 37.0], [-5.07, 39.10]] },
+    { name: "Lokichar to Lamu crude (LAPSSET)", status: "Planned", pts: [[2.38, 35.64], [0.35, 37.58], [-0.45, 39.65], [-2.27, 40.90]] },
+    { name: "Mombasa to Kisumu products (KPC)", status: "Operating", pts: [[-4.05, 39.67], [-2.5, 38.0], [-1.29, 36.82], [0.52, 35.27], [-0.10, 34.75]] },
+    { name: "Mtwara to Dar es Salaam gas", status: "Operating", pts: [[-10.27, 40.18], [-8.5, 39.6], [-6.82, 39.29]] },
+    { name: "Songo Songo to Dar es Salaam gas", status: "Operating", pts: [[-8.5, 39.5], [-6.82, 39.29]] },
+    { name: "Calub to Djibouti gas", status: "Proposed", pts: [[6.9, 44.0], [9.6, 42.0], [11.59, 43.15]] },
+    { name: "Temane to Secunda gas (ROMPCO)", status: "Operating", pts: [[-21.9, 35.1], [-23.5, 32.5], [-25.0, 30.5], [-26.5, 29.2]] },
+    { name: "Tazama (Dar es Salaam to Ndola)", status: "Operating", pts: [[-6.82, 39.29], [-8.0, 36.0], [-9.0, 33.5], [-12.97, 28.64]] }
+  ],
+  power: [
+    { name: "Ethiopia to Kenya HVDC", status: "Operating", pts: [[6.85, 37.75], [3.52, 39.05], [0.35, 37.58], [-1.07, 36.35]] },
+    { name: "Isinya to Arusha 400 kV", status: "Operating", pts: [[-1.9, 36.85], [-3.37, 36.68]] },
+    { name: "Tanzania backbone 400 kV", status: "Operating", pts: [[-7.77, 35.7], [-6.17, 35.74], [-4.8, 34.75], [-3.66, 33.42]] },
+    { name: "Cahora Bassa to Apollo HVDC", status: "Operating", pts: [[-15.6, 32.7], [-17.8, 31.0], [-22.2, 30.0], [-26.0, 28.2]] },
+    { name: "GERD to Holeta 500 kV", status: "Operating", pts: [[11.21, 35.09], [10.2, 36.8], [9.06, 38.5]] },
+    { name: "Tororo to Lessos 220 kV", status: "Operating", pts: [[0.69, 34.18], [0.1, 35.2]] },
+    { name: "Lake Turkana wind to Suswa 220 kV", status: "Operating", pts: [[2.75, 36.72], [0.5, 36.5], [-1.07, 36.35]] },
+    { name: "Tanzania to Zambia (TAZA) 330 kV", status: "Operating", pts: [[-8.9, 33.46], [-10.2, 31.2]] },
+    { name: "Ethiopia to Djibouti 230 kV", status: "Operating", pts: [[9.6, 41.86], [11.59, 43.15]] },
+    { name: "Ethiopia to Sudan 230 kV", status: "Operating", pts: [[11.6, 37.4], [12.95, 36.2], [14.03, 35.4]] }
+  ],
+  roads: [
+    { name: "Northern Corridor (Mombasa to Malaba)", status: "Operating", pts: [[-4.05, 39.67], [-1.29, 36.82], [0.52, 35.27], [0.63, 34.28]] },
+    { name: "Central Corridor (Dar to Mwanza)", status: "Operating", pts: [[-6.82, 39.29], [-6.82, 37.66], [-6.17, 35.74], [-3.66, 33.42], [-2.52, 32.9]] },
+    { name: "Tanga to Arusha", status: "Operating", pts: [[-5.07, 39.10], [-5.15, 38.45], [-3.35, 37.34], [-3.37, 36.68]] },
+    { name: "LAPSSET (Lamu to Lodwar)", status: "Partly built", pts: [[-2.27, 40.90], [-0.45, 39.65], [0.35, 37.58], [1.1, 36.7], [2.38, 35.64], [3.12, 35.6]] },
+    { name: "Beira Corridor", status: "Operating", pts: [[-19.83, 34.84], [-19.1, 33.5], [-18.97, 32.67]] },
+    { name: "Nacala Corridor", status: "Operating", pts: [[-14.54, 40.69], [-15.12, 39.27], [-14.8, 36.54]] },
+    { name: "Pemba to Palma", status: "Operating", pts: [[-12.97, 40.52], [-12.26, 40.12], [-11.35, 40.35], [-10.78, 40.47]] },
+    { name: "Djibouti to Addis Ababa", status: "Operating", pts: [[11.59, 43.15], [9.6, 41.86], [8.99, 40.17], [9.03, 38.74]] }
+  ]
+};
+
+// ---------- proximity and readiness scoring ----------
+var SCORE_CFG = [
+  { key: "ports", label: "Port", weight: 30, maxKm: 600 },
+  { key: "pipelines", label: "Pipeline", weight: 25, maxKm: 400 },
+  { key: "power", label: "Power grid", weight: 20, maxKm: 300 },
+  { key: "roads", label: "Road corridor", weight: 15, maxKm: 200 },
+  { key: "airports", label: "Airport", weight: 10, maxKm: 300 }
 ];
 
-// ═══════════════════════════════════════════════════════════════
-// AIRPORTS — international & regional with paved runways
-// ═══════════════════════════════════════════════════════════════
-export const AIRPORTS = [
-  // Kenya
-  { id: "a_jkia", name: "Jomo Kenyatta Intl (NBO)", country: "Kenya", lat: -1.32, lng: 36.93, type: "international", runway_m: 4117, notes: "East Africa's primary hub." },
-  { id: "a_moi", name: "Moi Intl (MBA)", country: "Kenya", lat: -4.03, lng: 39.59, type: "international", runway_m: 3350, notes: "Mombasa coastal hub." },
-  { id: "a_lokichar", name: "Lokichar Airstrip", country: "Kenya", lat: 2.52, lng: 35.73, type: "airstrip", runway_m: 1500, notes: "Tullow Oil operations. Unpaved." },
-  // Tanzania
-  { id: "a_jnia", name: "Julius Nyerere Intl (DAR)", country: "Tanzania", lat: -6.88, lng: 39.20, type: "international", runway_m: 3660, notes: "Dar es Salaam main hub." },
-  { id: "a_kia", name: "Kilimanjaro Intl (JRO)", country: "Tanzania", lat: -3.43, lng: 37.07, type: "international", runway_m: 3607, notes: "Northern Tanzania hub." },
-  // Mozambique
-  { id: "a_maputo", name: "Maputo Intl (MPM)", country: "Mozambique", lat: -26.04, lng: 32.57, type: "international", runway_m: 3700, notes: "Capital city main airport." },
-  { id: "a_beira", name: "Beira Airport (BEW)", country: "Mozambique", lat: -19.80, lng: 34.91, type: "regional", runway_m: 2400, notes: "Central corridor access." },
-  { id: "a_nacala", name: "Nacala Airport", country: "Mozambique", lat: -14.49, lng: 40.71, type: "regional", runway_m: 2000, notes: "Northern Mozambique." },
-  // Ethiopia
-  { id: "a_bole", name: "Bole Intl (ADD)", country: "Ethiopia", lat: 8.98, lng: 38.80, type: "international", runway_m: 3800, notes: "Ethiopian Airlines hub. Africa's busiest." },
-  { id: "a_dire_dawa", name: "Dire Dawa (DIR)", country: "Ethiopia", lat: 9.62, lng: 41.85, type: "regional", runway_m: 2800, notes: "Eastern Ethiopia. Near Ogaden Basin." },
-  // Somalia
-  { id: "a_mogadishu", name: "Aden Abdulle Intl (MGQ)", country: "Somalia", lat: 2.01, lng: 45.30, type: "international", runway_m: 3200, notes: "Mogadishu. AMISOM secured." },
-  { id: "a_hargeisa", name: "Egal Intl (HGA)", country: "Somalia", lat: 9.52, lng: 44.09, type: "regional", runway_m: 2800, notes: "Somaliland capital." },
-  // Eritrea
-  { id: "a_asmara", name: "Asmara Intl (ASM)", country: "Eritrea", lat: 15.29, lng: 38.91, type: "international", runway_m: 3000, notes: "Capital city. Limited international service." },
-  // Rwanda
-  { id: "a_kigali", name: "Kigali Intl (KGL)", country: "Rwanda", lat: -1.97, lng: 30.14, type: "international", runway_m: 3500, notes: "RwandAir hub." },
-  // Djibouti
-  { id: "a_djibouti", name: "Djibouti–Ambouli (JIB)", country: "Djibouti", lat: 11.55, lng: 43.16, type: "international", runway_m: 3200, notes: "Military & commercial. US/France/China bases." },
-];
+function toRad(d) { return d * Math.PI / 180; }
 
-// ═══════════════════════════════════════════════════════════════
-// PIPELINES — oil, gas, LNG, planned
-// ═══════════════════════════════════════════════════════════════
-export const PIPELINES = [
-  { id: "pl_eacop", name: "EACOP (East African Crude Oil Pipeline)", status: "construction", type: "oil", length_km: 1443, diameter_in: 24, route: [[0.5,30.5],[0.2,31],[-1,33],[-3,35],[-5.1,39.1]], notes: "Uganda Albertine → Tanga Port. TotalEnergies/CNOOC. Expected 2025-26." },
-  { id: "pl_moz_lng", name: "Rovuma Area 1 LNG Pipeline", status: "suspended", type: "gas", length_km: 45, diameter_in: 32, route: [[-13.5,42],[-12.5,40.5],[-10.8,40.4]], notes: "Offshore Rovuma → Afungi LNG. TotalEnergies. Force majeure 2021." },
-  { id: "pl_coral_flng", name: "Coral Sul FLNG Riser", status: "operational", type: "gas", length_km: 20, diameter_in: 16, route: [[-14.2,42.5],[-14,42.2]], notes: "ENI Coral South FLNG. 3.4 MTPA. Producing since 2022." },
-  { id: "pl_songo", name: "Songo Songo Gas Pipeline", status: "operational", type: "gas", length_km: 232, diameter_in: 16, route: [[-9.5,39.6],[-8.5,39.2],[-6.9,39.3]], notes: "Songo Songo Island → Dar es Salaam. Operational since 2004." },
-  { id: "pl_mnazi", name: "Mnazi Bay Gas Pipeline", status: "operational", type: "gas", length_km: 36, diameter_in: 12, route: [[-10.3,40.2],[-10.27,40.18]], notes: "Mnazi Bay → Mtwara. Wentworth Resources." },
-  { id: "pl_calub", name: "Calub-Hilala Gas Pipeline", status: "planned", type: "gas", length_km: 900, diameter_in: 20, route: [[6.5,44.5],[8,42],[11.5,43.1]], notes: "Ogaden → Djibouti. Planned export route. POLY-GCL." },
-  { id: "pl_lapsset", name: "LAPSSET Oil Pipeline", status: "planned", type: "oil", length_km: 1200, diameter_in: 20, route: [[2.6,35.8],[2,36.5],[0,38],[-2.3,40.9]], notes: "Lokichar → Lamu. Tullow/Kenya. Stalled." },
-  { id: "pl_pande", name: "Pande-Temane Gas Pipeline", status: "operational", type: "gas", length_km: 900, diameter_in: 26, route: [[-21.5,35],[-23,35.2],[-25.8,32.6]], notes: "Pande/Temane → Sasol Secunda (RSA). Cross-border." },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// POWER GRID — major transmission corridors (simplified)
-// ═══════════════════════════════════════════════════════════════
-export const POWER_LINES = [
-  // Kenya backbone (220-400kV)
-  { id: "pw_kenya_ns", name: "Kenya N-S Backbone", voltage_kv: 400, status: "existing", route: [[-1.3,36.9],[-0.1,36.2],[0.5,35.3],[1.5,37.5]], notes: "Nairobi-Naivasha-Eldoret 400kV." },
-  { id: "pw_kenya_coast", name: "Kenya Coast Line", voltage_kv: 220, status: "existing", route: [[-1.3,36.9],[-3.5,38.5],[-4,39.6]], notes: "Nairobi-Voi-Mombasa 220kV." },
-  // Tanzania
-  { id: "pw_tz_backbone", name: "Tanzania Backbone", voltage_kv: 400, status: "existing", route: [[-6.8,39.3],[-6.2,37.5],[-3.4,37.1],[-5.1,34]], notes: "DSM-Morogoro-Dodoma-Arusha 400kV." },
-  { id: "pw_tz_south", name: "Tanzania Southern", voltage_kv: 220, status: "planned", route: [[-6.8,39.3],[-9.5,39.2],[-10.3,40.2]], notes: "DSM-Lindi-Mtwara. Planned for LNG." },
-  // Mozambique
-  { id: "pw_moz_cahora", name: "Cahora Bassa-Maputo", voltage_kv: 533, status: "existing", route: [[-15.6,32.7],[-19,34],[-25.9,32.6]], notes: "533kV HVDC. Hydro export line." },
-  { id: "pw_moz_north", name: "Mozambique Northern", voltage_kv: 220, status: "planned", route: [[-15.6,32.7],[-14.5,40.5],[-12.5,39]], notes: "Planned connection to Rovuma/Palma." },
-  // Ethiopia
-  { id: "pw_eth_backbone", name: "Ethiopia ICS", voltage_kv: 400, status: "existing", route: [[9,38.8],[8.5,38.5],[7,37],[6,37.5]], notes: "Interconnected system. 400kV backbone." },
-  { id: "pw_eth_gerd", name: "GERD Transmission", voltage_kv: 500, status: "construction", route: [[11,35.1],[10.5,37],[9,38.8]], notes: "Grand Ethiopian Renaissance Dam 500kV." },
-  { id: "pw_eth_dji", name: "Ethiopia-Djibouti Interconnect", voltage_kv: 230, status: "existing", route: [[9,38.8],[9.6,41.9],[11.5,43.1]], notes: "Cross-border interconnection. 230kV." },
-  // Regional interconnects
-  { id: "pw_ken_tz", name: "Kenya-Tanzania Interconnect", voltage_kv: 400, status: "existing", route: [[-1.3,36.9],[-2.5,37],[-3.4,37.1]], notes: "400kV interconnection via Namanga." },
-  { id: "pw_ken_eth", name: "Kenya-Ethiopia HVDC", voltage_kv: 500, status: "existing", route: [[-1.3,36.9],[3,37.5],[6,37.5],[9,38.8]], notes: "500kV HVDC link. 2000MW capacity." },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// MAJOR ROADS — trunk corridors relevant to basin access
-// ═══════════════════════════════════════════════════════════════
-export const ROADS = [
-  // Trans-African Highway corridors
-  { id: "r_cairo_cape", name: "Cairo-Cape Town (TAH4)", type: "highway", status: "partial", route: [[9,38.8],[6,37],[1,36],[0,34],[-1.3,36.9],[-3.4,37.1],[-6.8,39.3]], notes: "TAH4 through East Africa corridor." },
-  // Kenya
-  { id: "r_nairobi_mombasa", name: "Nairobi-Mombasa", type: "highway", status: "paved", route: [[-1.3,36.9],[-2.5,37.8],[-4,39.6]], notes: "A109. Primary corridor. SGR parallel." },
-  { id: "r_nairobi_lokichar", name: "Nairobi-Turkana", type: "trunk", status: "partial", route: [[-1.3,36.9],[0.3,36.1],[1.5,35.5],[2.6,35.8]], notes: "A1 to Lokichar basin. Partially unpaved north of Maralal." },
-  { id: "r_lamu_road", name: "Lamu-Garissa", type: "trunk", status: "paved", route: [[-2.3,40.9],[-1,40],[-0.5,39.6]], notes: "LAPSSET corridor road. Recently paved." },
-  // Tanzania
-  { id: "r_dar_mtwara", name: "Dar es Salaam-Mtwara", type: "trunk", status: "paved", route: [[-6.8,39.3],[-8.5,39.2],[-10.3,40.2]], notes: "Coastal route. Links to Mnazi Bay gas." },
-  { id: "r_tanzam", name: "TANZAM Highway", type: "highway", status: "paved", route: [[-6.8,39.3],[-7,37.5],[-8.5,36.5],[-8.9,32.9]], notes: "Dar-Iringa-Mbeya-Zambia corridor." },
-  // Mozambique
-  { id: "r_en1", name: "EN1 (Mozambique)", type: "highway", status: "paved", route: [[-25.9,32.6],[-23,35],[-19,34.5],[-15,40.5],[-12.5,39]], notes: "National north-south highway. 2500km." },
-  // Ethiopia
-  { id: "r_addis_djibouti", name: "Addis Ababa-Djibouti", type: "highway", status: "paved", route: [[9,38.8],[9.3,42.1],[11.5,43.1]], notes: "Primary trade corridor. Rail parallel." },
-  { id: "r_addis_ogaden", name: "Addis-Harar-Jijiga", type: "trunk", status: "paved", route: [[9,38.8],[9.3,42.1],[9.4,42.8]], notes: "Route toward Ogaden Basin." },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// PROXIMITY SCORING — compute distance from basin to nearest infra
-// ═══════════════════════════════════════════════════════════════
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+export function haversineKm(a, b) {
+  var dLat = toRad(b[0] - a[0]);
+  var dLng = toRad(b[1] - a[1]);
+  var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
-function nearestPoint(lat, lng, points) {
-  let minD = Infinity, nearest = null;
-  for (const p of points) {
-    const d = haversine(lat, lng, p.lat, p.lng);
-    if (d < minD) { minD = d; nearest = p; }
-  }
-  return { distance_km: Math.round(minD), asset: nearest };
+// Point-to-segment distance using a local equirectangular projection (fine for a few hundred km in the tropics).
+function segDistKm(p, a, b) {
+  var kx = 111.32 * Math.cos(toRad(p[0]));
+  var ky = 110.57;
+  var ax = (a[1] - p[1]) * kx;
+  var ay = (a[0] - p[0]) * ky;
+  var bx = (b[1] - p[1]) * kx;
+  var by = (b[0] - p[0]) * ky;
+  var dx = bx - ax;
+  var dy = by - ay;
+  var len2 = dx * dx + dy * dy;
+  var t = len2 === 0 ? 0 : Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2));
+  var cx = ax + t * dx;
+  var cy = ay + t * dy;
+  return Math.sqrt(cx * cx + cy * cy);
 }
 
-function nearestLinePoint(lat, lng, lines) {
-  let minD = Infinity, nearest = null;
-  for (const line of lines) {
-    for (const pt of line.route) {
-      const d = haversine(lat, lng, pt[0], pt[1]);
-      if (d < minD) { minD = d; nearest = line; }
+export function nearestInfra(lat, lng, key) {
+  var p = [lat, lng];
+  var list = INFRA[key];
+  var best = { dist: Infinity, name: "" };
+  var i;
+  var j;
+  var d;
+  for (i = 0; i < list.length; i++) {
+    var it = list[i];
+    if (it.pos) {
+      d = haversineKm(p, it.pos);
+      if (d < best.dist) best = { dist: d, name: it.name };
+    } else {
+      for (j = 0; j < it.pts.length - 1; j++) {
+        d = segDistKm(p, it.pts[j], it.pts[j + 1]);
+        if (d < best.dist) best = { dist: d, name: it.name };
+      }
     }
   }
-  return { distance_km: Math.round(minD), asset: nearest };
+  return best;
 }
 
-export function computeProximity(basin) {
-  return {
-    port: nearestPoint(basin.lat, basin.lng, PORTS),
-    airport: nearestPoint(basin.lat, basin.lng, AIRPORTS),
-    pipeline: nearestLinePoint(basin.lat, basin.lng, PIPELINES),
-    power: nearestLinePoint(basin.lat, basin.lng, POWER_LINES),
-    road: nearestLinePoint(basin.lat, basin.lng, ROADS),
-  };
-}
-
-// Development readiness score: 0-100
-export function devReadinessScore(basin) {
-  const prox = computeProximity(basin);
-  // Score each category: closer = higher score, max 20 pts each
-  const portScore = Math.max(0, 20 - (prox.port.distance_km / 25));
-  const airScore = Math.max(0, 20 - (prox.airport.distance_km / 25));
-  const pipeScore = Math.max(0, 20 - (prox.pipeline.distance_km / 30));
-  const powerScore = Math.max(0, 20 - (prox.power.distance_km / 25));
-  const roadScore = Math.max(0, 20 - (prox.road.distance_km / 20));
-  return {
-    total: Math.round(portScore + airScore + pipeScore + powerScore + roadScore),
-    breakdown: {
-      port: { score: Math.round(portScore), distance_km: prox.port.distance_km, name: prox.port.asset?.name },
-      airport: { score: Math.round(airScore), distance_km: prox.airport.distance_km, name: prox.airport.asset?.name },
-      pipeline: { score: Math.round(pipeScore), distance_km: prox.pipeline.distance_km, name: prox.pipeline.asset?.name },
-      power: { score: Math.round(powerScore), distance_km: prox.power.distance_km, name: prox.power.asset?.name },
-      road: { score: Math.round(roadScore), distance_km: prox.road.distance_km, name: prox.road.asset?.name },
-    }
-  };
+// Development readiness 0-100 from distance to the nearest port, pipeline, grid line, road corridor and airport.
+// Uses the basin centroid, so it is a coarse screening score and not a site assessment.
+export function readinessScore(lat, lng) {
+  var total = 0;
+  var parts = [];
+  for (var i = 0; i < SCORE_CFG.length; i++) {
+    var c = SCORE_CFG[i];
+    var n = nearestInfra(lat, lng, c.key);
+    var pts = c.weight * Math.max(0, 1 - n.dist / c.maxKm);
+    total += pts;
+    parts.push({ key: c.key, label: c.label, name: n.name, dist: Math.round(n.dist), pts: Math.round(pts), weight: c.weight });
+  }
+  return { score: Math.round(total), parts: parts };
 }
