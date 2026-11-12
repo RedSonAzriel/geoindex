@@ -1,11 +1,13 @@
 // ══════════════════════════════════════════════════════════════════
 // GeoIndex — 3D Isometric Basin Viewer
-// Three.js loaded from CDN (same pattern as Leaflet in MapPanel)
+// Three.js bundled via npm (Vite handles tree-shaking)
 // Renders geological cross-section cutaway with formation layers,
 // terrain surface, well pins, and depth markers
 // ══════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 var STATUS_CLR = { Frontier: "#a78bfa", Exploration: "#fbbf24", Appraisal: "#60a5fa", Development: "#34d399" };
 
@@ -36,34 +38,7 @@ function hashString(str) {
   return Math.abs(hash);
 }
 
-// Load Three.js + OrbitControls from CDN (r128 — last stable with legacy examples/js/)
-function loadThreeJS(callback) {
-  if (window.THREE && window.THREE.OrbitControls) {
-    callback();
-    return;
-  }
-
-  function loadOrbitControls() {
-    if (document.getElementById("three-orbit-cdn")) { callback(); return; }
-    var ctrlScript = document.createElement("script");
-    ctrlScript.id = "three-orbit-cdn";
-    ctrlScript.src = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js";
-    ctrlScript.onload = function () { callback(); };
-    ctrlScript.onerror = function () { console.error("Failed to load OrbitControls"); callback(); };
-    document.head.appendChild(ctrlScript);
-  }
-
-  if (!document.getElementById("three-js-cdn")) {
-    var script = document.createElement("script");
-    script.id = "three-js-cdn";
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-    script.onload = function () { loadOrbitControls(); };
-    script.onerror = function () { console.error("Failed to load Three.js"); };
-    document.head.appendChild(script);
-  } else if (window.THREE) {
-    loadOrbitControls();
-  }
-}
+// Three.js and OrbitControls are now imported via npm — no CDN loading needed
 
 // Generate terrain heightmap for the block surface
 function generateTerrain(segments, basin) {
@@ -117,26 +92,13 @@ export default function BasinViewer3D(props) {
   var cameraRef = useRef(null);
   var controlsRef = useRef(null);
   var frameRef = useRef(null);
-  var _ready = useState(false);
-  var ready = _ready[0];
-  var setReady = _ready[1];
-  var _loading = useState(true);
+  var _loading = useState(false);
   var loading = _loading[0];
   var setLoading = _loading[1];
 
-  // Load Three.js
+  // Build and run the 3D scene — Three.js is bundled, no async load needed
   useEffect(function () {
-    loadThreeJS(function () {
-      setReady(true);
-      setLoading(false);
-    });
-  }, []);
-
-  // Build and run the 3D scene
-  useEffect(function () {
-    if (!ready || !containerRef.current || !basin) return;
-
-    var THREE = window.THREE;
+    if (!containerRef.current || !basin) return;
     var container = containerRef.current;
     var w = container.clientWidth;
     var h = container.clientHeight;
@@ -170,7 +132,7 @@ export default function BasinViewer3D(props) {
     cameraRef.current = camera;
 
     // ── Controls
-    var controls = new THREE.OrbitControls(camera, renderer.domElement);
+    var controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
     controls.enablePan = true;
