@@ -479,12 +479,12 @@ export default function BasinContourMap(props) {
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillText(
-      "Isopach CI: " + Math.round(thicknessMax / numContours) + "m  |  Structure CI: dashed  |  Wells: " + wellCount + " shown",
+      "CI: " + Math.round(thicknessMax / numContours) + "m  |  Structure: dashed  |  " + wellCount + " illustrative well spots",
       margin.left, h - 6
     );
 
     ctx.textAlign = "right";
-    ctx.fillText("Procedural model — " + basin.source, w - margin.right, h - 6);
+    ctx.fillText("Synthetic surface", w - margin.right, h - 6);
 
   }, [basin]);
 
@@ -527,6 +527,10 @@ export default function BasinContourMap(props) {
             <strong style={{ color: "#e2e8f0" }}>{basin.wells_drilled}</strong> wells
           </span>
         </div>
+      </div>
+
+      <div style={{ padding: "8px 16px", background: "#fbbf240d", borderBottom: "1px solid #fbbf2430", fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
+        <strong>Illustrative only.</strong> This thickness surface and the well positions are generated from the basin's type and depth range. They are not mapped data.
       </div>
 
       {/* Canvas area */}
