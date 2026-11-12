@@ -405,7 +405,7 @@ export default function BasinViewer3D(props) {
         }
       });
     };
-  }, [ready, basin]);
+  }, [basin]);
 
   // ── Stats overlay
   var depthRange = basin ? (basin.depth_m[0] + "–" + basin.depth_m[1] + "m") : "";

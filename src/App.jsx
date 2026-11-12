@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import BasinViewer3D from "./components/BasinViewer3D";
+import BasinContourMap from "./components/BasinContourMap";
+import WellLogViewer from "./components/WellLogViewer";
 
 const BASINS = [
   { id:"lamu", name:"Lamu Basin", country:"Kenya", type:"Passive Margin", status:"Exploration", area_km2:86000, depth_m:[2000,6000], formations:["Jurassic carbonates","Cretaceous clastics","Paleogene deepwater"], plays:["Deepwater turbidite","Carbonate platform"], estimated_oil_mmbo:{p90:200,p50:680,p10:1800}, estimated_gas_tcf:{p90:5,p50:12.4,p10:28}, wells_drilled:14, discovery_year:null, lat:-1.8, lng:41.2, source:"USGS 2012; Kenya Geological Survey", notes:"Offshore deepwater frontier. Multiple leads via 2D/3D seismic." },
@@ -292,12 +294,20 @@ function Table({data,sel,onSel}) {
 }
 
 // ── DETAIL DRAWER
+var VIEW_MODES = [
+  {id:"detail",label:"Detail",icon:"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"},
+  {id:"contour",label:"Contour",icon:"M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"},
+  {id:"welllog",label:"Well Log",icon:"M22 12h-4l-3 9L9 3l-3 9H2"},
+  {id:"block3d",label:"3D Block",icon:"M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"},
+];
+
 function Drawer({basin:b,onClose}) {
-  const [view3D,setView3D]=useState(false);
-  // Reset to 2D when basin changes
-  useEffect(()=>{setView3D(false);},[b?.id]);
+  const [viewMode,setViewMode]=useState("detail");
+  // Reset to detail when basin changes
+  useEffect(()=>{setViewMode("detail");},[b?.id]);
   if(!b) return null;
   const c=STATUS_CLR[b.status];
+  const isViz = viewMode !== "detail";
   const Bar=({label,p90,p50,p10,unit,accent})=>{const mx=p10*1.15;return(
     <div style={{marginBottom:18}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
@@ -315,9 +325,9 @@ function Drawer({basin:b,onClose}) {
     </div>
   )};
   return(
-    <div style={S.drawer}>
+    <div style={{...S.drawer,width:isViz?560:420}}>
       <div style={S.drawerInner}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
           <div>
             <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}>
               <span style={{...S.pill,color:c,background:`${c}15`,border:`1px solid ${c}28`}}>{b.status}</span>
@@ -326,16 +336,39 @@ function Drawer({basin:b,onClose}) {
             <h2 style={{margin:0,fontSize:22,fontWeight:700,color:"#f1f5f9"}}>{b.name}</h2>
             <div style={{fontSize:12,color:"#475569",marginTop:3}}>{b.type} Basin</div>
           </div>
-          <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setView3D(!view3D)} style={{...S.xBtn,width:"auto",padding:"0 10px",gap:6,display:"flex",alignItems:"center",fontSize:11,fontFamily:"inherit",color:view3D?"#34d399":"#64748b",background:view3D?"#34d39912":"#111b2e",borderColor:view3D?"#34d39930":"#1e2d45"}}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>
-              {view3D?"2D":"3D"}
-            </button>
-            <button onClick={onClose} style={S.xBtn}><Ico sz={15} c="#64748b"><path d="M18 6L6 18M6 6l12 12"/></Ico></button>
-          </div>
+          <button onClick={onClose} style={S.xBtn}><Ico sz={15} c="#64748b"><path d="M18 6L6 18M6 6l12 12"/></Ico></button>
         </div>
-        {view3D ? (
-          <div style={{height:"calc(100vh - 120px)"}}>
+
+        {/* View mode toggle bar */}
+        <div style={{display:"flex",gap:4,marginBottom:16,padding:3,background:"#091019",borderRadius:8,border:"1px solid #1a2338"}}>
+          {VIEW_MODES.map(function(m){
+            var active = viewMode===m.id;
+            return(
+              <button key={m.id} onClick={function(){setViewMode(m.id)}} style={{
+                flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,
+                padding:"7px 6px",borderRadius:6,border:"none",cursor:"pointer",
+                fontSize:10,fontWeight:600,fontFamily:"inherit",
+                background:active?"#1a2338":"transparent",
+                color:active?"#e2e8f0":"#475569",
+                transition:"all .15s",
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={active?(m.id==="contour"?"#34d399":m.id==="welllog"?"#60a5fa":m.id==="block3d"?"#a78bfa":"#e2e8f0"):"#475569"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon}/></svg>
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {viewMode === "contour" ? (
+          <div style={{height:"calc(100vh - 180px)"}}>
+            <BasinContourMap basin={b}/>
+          </div>
+        ) : viewMode === "welllog" ? (
+          <div style={{height:"calc(100vh - 180px)"}}>
+            <WellLogViewer basin={b}/>
+          </div>
+        ) : viewMode === "block3d" ? (
+          <div style={{height:"calc(100vh - 180px)"}}>
             <BasinViewer3D basin={b}/>
           </div>
         ) : (
