@@ -389,8 +389,8 @@ export default function App() {
   return(
     <div style={S.root}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-      <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js" as="script"/>
-      <link rel="preload" href="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/controls/OrbitControls.js" as="script"/>
+      <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script"/>
+      <link rel="preload" href="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" as="script"/>
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0b1120}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:4px}

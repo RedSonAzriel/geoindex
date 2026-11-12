@@ -36,35 +36,32 @@ function hashString(str) {
   return Math.abs(hash);
 }
 
-// Load Three.js + OrbitControls from CDN
+// Load Three.js + OrbitControls from CDN (r128 — last stable with legacy examples/js/)
 function loadThreeJS(callback) {
   if (window.THREE && window.THREE.OrbitControls) {
     callback();
     return;
   }
 
-  // Load Three.js core
+  function loadOrbitControls() {
+    if (document.getElementById("three-orbit-cdn")) { callback(); return; }
+    var ctrlScript = document.createElement("script");
+    ctrlScript.id = "three-orbit-cdn";
+    ctrlScript.src = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js";
+    ctrlScript.onload = function () { callback(); };
+    ctrlScript.onerror = function () { console.error("Failed to load OrbitControls"); callback(); };
+    document.head.appendChild(ctrlScript);
+  }
+
   if (!document.getElementById("three-js-cdn")) {
     var script = document.createElement("script");
     script.id = "three-js-cdn";
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js";
-    script.onload = function () {
-      // Load OrbitControls after Three.js is ready
-      var ctrlScript = document.createElement("script");
-      ctrlScript.id = "three-orbit-cdn";
-      ctrlScript.src = "https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/controls/OrbitControls.js";
-      ctrlScript.onload = function () {
-        callback();
-      };
-      document.head.appendChild(ctrlScript);
-    };
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    script.onload = function () { loadOrbitControls(); };
+    script.onerror = function () { console.error("Failed to load Three.js"); };
     document.head.appendChild(script);
-  } else if (window.THREE && !window.THREE.OrbitControls) {
-    var ctrlScript = document.createElement("script");
-    ctrlScript.id = "three-orbit-cdn";
-    ctrlScript.src = "https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/controls/OrbitControls.js";
-    ctrlScript.onload = function () { callback(); };
-    document.head.appendChild(ctrlScript);
+  } else if (window.THREE) {
+    loadOrbitControls();
   }
 }
 
