@@ -18,7 +18,7 @@ var TOPO_TILES = [
   "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
 ];
 
-var HOME = { center: [37, 2], zoom: 2.6 };
+var HOME = { center: [33, -9], zoom: 2.3 };
 
 function buildStyle() {
   return {

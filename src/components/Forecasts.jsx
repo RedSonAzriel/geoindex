@@ -146,7 +146,12 @@ export default function Forecasts(props) {
   if (!basin) return <div style={card}>No basins loaded.</div>;
 
   function setInput(k, v) { var o = Object.assign({}, over || {}); o[k] = v; setOver(o); }
-  function pick(v) { setId(v); setOver(null); setCalibrate(false); }
+  function pick(v) {
+    setId(v); setOver(null); setCalibrate(false);
+    // Gas-only basins (no oil estimate, e.g. Karoo shale gas, Kalahari CBM) open on gas.
+    var nb = basins.filter(function (x) { return x.id === v; })[0];
+    if (nb && nb.estimated_oil_mmbo && !nb.estimated_oil_mmbo.p50) setFluid("gas");
+  }
   var u = run.unit;
   var impliedPct = run.median_area_fraction * 100;
 
@@ -163,7 +168,7 @@ export default function Forecasts(props) {
             {basins.map(function (b) { return <option key={b.id} value={b.id}>{b.name} ({b.country})</option>; })}
           </select>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>
-            {basin.type} · {basin.status} · {basin.area_km2.toLocaleString()} km² · {basin.wells_drilled} wells drilled
+            {basin.type} · {basin.status} · {basin.area_km2.toLocaleString()} km² · {basin.wells_drilled == null ? "well count n/a" : basin.wells_drilled + " wells drilled"}
           </div>
 
           <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>

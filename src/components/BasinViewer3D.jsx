@@ -281,7 +281,7 @@ export default function BasinViewer3D(props) {
     scene.add(basement);
 
     // ── Well pins
-    var wellCount = Math.min(basin.wells_drilled, 8); // cap visual wells
+    var wellCount = Math.min(basin.wells_drilled || 3, 8); // cap visual wells
     var seed = hashString(basin.id);
     for (var wi = 0; wi < wellCount; wi++) {
       var wx = (seededRandom(seed + wi * 73) - 0.5) * (blockW * 0.6);
@@ -428,7 +428,7 @@ export default function BasinViewer3D(props) {
           <span style={VS.statDivider}>·</span>
           <span style={VS.stat}>{depthRange} depth</span>
           <span style={VS.statDivider}>·</span>
-          <span style={VS.stat}>{basin ? basin.wells_drilled : 0} wells</span>
+          <span style={VS.stat}>{basin && basin.wells_drilled != null ? basin.wells_drilled : "\u2014"} wells</span>
         </div>
       </div>
 

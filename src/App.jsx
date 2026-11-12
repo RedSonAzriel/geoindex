@@ -41,12 +41,27 @@ const BASINS = [
   // ── RWANDA
   { id:"kivu", name:"Lake Kivu Basin", country:"Rwanda", type:"Rift", status:"Exploration", area_km2:2400, depth_m:[200,1500], formations:["Pliocene-Pleistocene lacustrine","Rift volcanoclastics"], plays:["Lacustrine source/reservoir","Dissolved gas"], estimated_oil_mmbo:{p90:1,p50:5,p10:20}, estimated_gas_tcf:{p90:1.5,p50:2.2,p10:3}, wells_drilled:3, discovery_year:1960, lat:-2.0, lng:29.1, source:"Rwanda Energy Group; KivuWatt; USGS", notes:"~55 BCM dissolved methane and CO2 in lake waters. KivuWatt extraction plant operational. Unique dissolved gas play." },
   { id:"rw_rift", name:"Albertine Rift (Rwanda)", country:"Rwanda", type:"Rift", status:"Frontier", area_km2:8000, depth_m:[500,3000], formations:["Miocene-Pliocene lacustrine","Neogene clastics"], plays:["Lacustrine rift","Structural"], estimated_oil_mmbo:{p90:5,p50:25,p10:80}, estimated_gas_tcf:{p90:0.1,p50:0.4,p10:1.5}, wells_drilled:0, discovery_year:null, lat:-1.8, lng:29.5, source:"Rwanda Mining Board; USGS", notes:"Southern extension of Uganda's prolific Albertine Graben. Undrilled but analogous to Ugandan discoveries." },
+  // ── NAMIBIA
+  { id:"orange_na", name:"Orange Basin (Namibia)", country:"Namibia", type:"Passive Margin", status:"Appraisal", area_km2:80000, depth_m:[3000,6500], formations:["Lower Cretaceous sandstones (Venus)","Cenomanian-Turonian sands (Mopane)","Upper Cretaceous marine sandstones (Graff)"], plays:["Deepwater turbidite","Basin-floor fan"], estimated_oil_mmbo:{p90:1000,p50:2000,p10:4000}, estimated_gas_tcf:{p90:2,p50:5,p10:10}, wells_drilled:null, discovery_year:1974, lat:-27.5, lng:14.2, source:"TotalEnergies; Galp; Shell; GeoConvention 2026 (Orange Basin review); The Extractor 2025", notes:"About 14 oil and gas discoveries since 2022. Venus (TotalEnergies, 2022): latest estimate ~750 MMbbl recoverable, 150,000 bpd FPSO targeted for 2026 FID. Mopane (Galp, 2024): ~10 bn boe in place per Galp. Shell (Graff, Jonker, La Rona, Lesedi) took a US$400m impairment in 2025. Kudu gas field (1974): ~1.3 Tcf in place. Estimate ranges are a GeoIndex screening synthesis of these published figures, not an assessment." },
+  { id:"walvis", name:"Walvis Basin", country:"Namibia", type:"Passive Margin", status:"Frontier", area_km2:60000, depth_m:[1500,5000], formations:["Lower Cretaceous source shales","Aptian-Albian carbonates and clastics"], plays:["Carbonate platform","Deepwater turbidite"], estimated_oil_mmbo:{p90:20,p50:150,p10:600}, estimated_gas_tcf:{p90:0.2,p50:1,p10:4}, wells_drilled:null, discovery_year:null, lat:-21.8, lng:12.4, source:"HRT; Pancontinental; Eco Atlantic; Chevron (PEL 82)", notes:"Wingat-1 (HRT, 2013) recovered 38-42 API light oil but was not commercial; Murombe-1 found water; Cormorant-1 (2018) had oil shows. Chevron took operatorship of PEL 82 in 2025. No published resource assessment: estimate ranges and area are GeoIndex screening placeholders." },
+  { id:"kavango", name:"Kavango Basin", country:"Namibia", type:"Rift", status:"Exploration", area_km2:25000, depth_m:[1000,4000], formations:["Karoo Supergroup (Permian-Triassic)","Damara Fold Belt (Neoproterozoic)"], plays:["Karoo rift structural","Damara fold-belt thrust"], estimated_oil_mmbo:{p90:0,p50:50,p10:300}, estimated_gas_tcf:{p90:0,p50:0.5,p10:3}, wells_drilled:4, discovery_year:null, lat:-18.3, lng:20.0, source:"ReconAfrica (PEL 73); The Extractor 2025", notes:"ReconAfrica licence (~25,000 km2) spans NE Namibia and NW Botswana. Three stratigraphic wells plus the Naingopo exploration well (2024, Damara Fold Belt). Over 2,200 km of 2D seismic. No independent resource estimate published: ranges are GeoIndex screening placeholders." },
+  // ── SOUTH AFRICA
+  { id:"orange_za", name:"Orange Basin (South Africa)", country:"South Africa", type:"Passive Margin", status:"Exploration", area_km2:80000, depth_m:[2000,6000], formations:["Cretaceous fluvial-deltaic sandstones","Upper Cretaceous turbidites"], plays:["Shelf gas","Deepwater turbidite"], estimated_oil_mmbo:{p90:410,p50:955,p10:2044}, estimated_gas_tcf:{p90:12.9,p50:26.0,p10:49.1}, wells_drilled:null, discovery_year:null, lat:-31.0, lng:16.0, source:"USGS 2016 (DDS-69-GG, Orange River Coastal Province); Sunbird Energy", notes:"Ibhubesi gas field: 210 Bcf reserves confirmed by independent assessment (2013). Deepwater blocks sit on trend with the Namibian Venus and Mopane discoveries. Estimates are USGS 2016 undiscovered resources for the whole Orange River Coastal Province (Namibia and South Africa), made before the recent Namibian discoveries." },
+  { id:"outeniqua", name:"Outeniqua Basin", country:"South Africa", type:"Rift", status:"Development", area_km2:90000, depth_m:[1500,4500], formations:["Lower-Middle Cretaceous sandstones","Mid-Cretaceous deepwater sands (Luiperd)"], plays:["Rift sub-basin structural","Deepwater gas-condensate"], estimated_oil_mmbo:{p90:924,p50:1984,p10:3851}, estimated_gas_tcf:{p90:17.1,p50:33.7,p10:62.7}, wells_drilled:null, discovery_year:null, lat:-35.0, lng:22.0, source:"USGS 2016 (FS 2012-3030, South Africa Coastal Province); Africa Energy Corp; PetroSA", notes:"Bredasdorp and Pletmos sub-basins feed PetroSA's Mossel Bay gas-to-liquids plant. Brulpadda (2019) and Luiperd (2020) gas-condensate discoveries in Block 11B/12B; Luiperd tested 33 MMcf/d plus 4,320 b/d condensate. TotalEnergies withdrew in 2024 citing no commercial case. Estimates are USGS undiscovered resources for the whole South Africa Coastal Province; area is approximate." },
+  { id:"karoo", name:"Karoo Basin", country:"South Africa", type:"Intracratonic", status:"Frontier", area_km2:700000, depth_m:[1500,4000], formations:["Whitehill Formation (Permian shale)","Prince Albert Formation","Collingham Formation"], plays:["Shale gas"], estimated_oil_mmbo:{p90:0,p50:0,p10:0}, estimated_gas_tcf:{p90:5,p50:36,p10:183}, wells_drilled:null, discovery_year:null, lat:-31.5, lng:23.5, source:"Petroleum Agency SA (2016); Council for Geoscience / KARIN", notes:"Shale gas play in the Whitehill Formation. Petroleum Agency SA modelled ~183 Tcf technically recoverable (2016), against an earlier conservative ~36 Tcf. Two Karoo Research Initiative boreholes found limited shale gas potential. P10 and P50 use those two published figures; the P90 is a GeoIndex placeholder." },
+  // ── BOTSWANA
+  { id:"kalahari_cbm", name:"Kalahari Karoo CBM", country:"Botswana", type:"Intracratonic", status:"Appraisal", area_km2:10000, depth_m:[300,1000], formations:["Karoo Supergroup coals (Permian)"], plays:["Coalbed methane"], estimated_oil_mmbo:{p90:0,p50:0,p10:0}, estimated_gas_tcf:{p90:0.1,p50:0.5,p10:2}, wells_drilled:null, discovery_year:null, lat:-22.3, lng:25.8, source:"Tlou Energy (Lesedi CBM project)", notes:"Tlou Energy's Lesedi project was the first in Botswana with independently certified gas reserves; the company says more drilling is needed before full field investment. Estimate ranges and area are GeoIndex screening placeholders." },
+  // ── ZIMBABWE
+  { id:"cabora_bassa", name:"Cabora Bassa Basin", country:"Zimbabwe", type:"Rift", status:"Exploration", area_km2:8000, depth_m:[1000,4000], formations:["Upper Angwa Formation","Pebbly Arkose Formation (Upper Triassic)","Dande Formation"], plays:["Karoo rift structural","Gas-condensate"], estimated_oil_mmbo:{p90:30,p50:184,p10:400}, estimated_gas_tcf:{p90:0.5,p50:2.9,p10:8}, wells_drilled:2, discovery_year:2024, lat:-16.2, lng:30.9, source:"Invictus Energy; World Oil 2024", notes:"Mukuyu-2 (Invictus Energy) confirmed a gas-condensate discovery with light oil potential in 2024. Invictus reports 2.9 Tcf gas and 184 MMbbl condensate (gross mean unrisked, prospective) for eight eastern prospects. P50s use those figures; P90 and P10 are GeoIndex placeholders. Area is approximate." },
+  // ── MADAGASCAR
+  { id:"morondava", name:"Morondava Basin", country:"Madagascar", type:"Rift / Passive Margin", status:"Exploration", area_km2:170000, depth_m:[500,6000], formations:["Isalo Group (Triassic-Jurassic)","Amboloando Formation"], plays:["Heavy oil","Oil sands","Offshore structural"], estimated_oil_mmbo:{p90:5701,p50:10255,p10:17455}, estimated_gas_tcf:{p90:93,p50:160,p10:268}, wells_drilled:null, discovery_year:null, lat:-20.0, lng:44.3, source:"USGS 2016 (DDS-69-GG, Morondava Province); Madagascar Oil", notes:"Onshore Tsimiroro heavy oil (14-16 API, Madagascar Oil): 1.1-2.5 bn bbl contingent oil in place (2010 estimate), steam-flood pilot. Bemolanga oil sands lie to the north. Estimates are USGS 2016 undiscovered resources for the Morondava Province, mostly offshore. Area is approximate." },
+  { id:"majunga", name:"Majunga Basin", country:"Madagascar", type:"Passive Margin", status:"Frontier", area_km2:50000, depth_m:[1000,5000], formations:["Jurassic-Cretaceous clastics","Karoo rift fill"], plays:["Structural","Deepwater turbidite"], estimated_oil_mmbo:{p90:10,p50:80,p10:400}, estimated_gas_tcf:{p90:0.2,p50:1.5,p10:6}, wells_drilled:null, discovery_year:null, lat:-16.0, lng:45.8, source:"GeoExpro (Offshore Madagascar); TGS", notes:"Northwest Madagascar frontier with sparse well control and multiclient seismic coverage. No published assessment found: estimate ranges, area and depth are GeoIndex screening placeholders." },
 ];
 
-const COUNTRIES = ["All","Eritrea","Ethiopia","Kenya","Mozambique","Rwanda","Somalia","Tanzania"];
+const COUNTRIES = ["All","Botswana","Eritrea","Ethiopia","Kenya","Madagascar","Mozambique","Namibia","Rwanda","Somalia","South Africa","Tanzania","Zimbabwe"];
 const STATUSES = ["All","Frontier","Exploration","Appraisal","Development"];
 const STATUS_CLR = { Frontier:"#a78bfa", Exploration:"#fbbf24", Appraisal:"#60a5fa", Development:"#34d399" };
-const FLAG = { Kenya:"\u{1F1F0}\u{1F1EA}", Mozambique:"\u{1F1F2}\u{1F1FF}", Tanzania:"\u{1F1F9}\u{1F1FF}", Ethiopia:"\u{1F1EA}\u{1F1F9}", Somalia:"\u{1F1F8}\u{1F1F4}", Eritrea:"\u{1F1EA}\u{1F1F7}", Rwanda:"\u{1F1F7}\u{1F1FC}" };
+const FLAG = { Kenya:"\u{1F1F0}\u{1F1EA}", Mozambique:"\u{1F1F2}\u{1F1FF}", Tanzania:"\u{1F1F9}\u{1F1FF}", Ethiopia:"\u{1F1EA}\u{1F1F9}", Somalia:"\u{1F1F8}\u{1F1F4}", Eritrea:"\u{1F1EA}\u{1F1F7}", Rwanda:"\u{1F1F7}\u{1F1FC}", Namibia:"\u{1F1F3}\u{1F1E6}", "South Africa":"\u{1F1FF}\u{1F1E6}", Botswana:"\u{1F1E7}\u{1F1FC}", Zimbabwe:"\u{1F1FF}\u{1F1FC}", Madagascar:"\u{1F1F2}\u{1F1EC}" };
 
 const Ico = ({children,sz=18,c="currentColor"}) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{children}</svg>;
 
@@ -63,11 +78,11 @@ const NAV_ITEMS = [
 
 // ── PAGE META
 const PAGE_META = {
-  dash:{title:"Dashboard",crumb:"Overview \u00B7 East Africa & Horn of Africa Region"},
-  map:{title:"Basin Map",crumb:"Basins \u00B7 East Africa & Horn of Africa Region"},
-  lib:{title:"Data Library",crumb:"Reference data \u00B7 East Africa & Horn of Africa Region"},
-  notes:{title:"Field Notes",crumb:"Curated E&P news \u00B7 East Africa & Horn of Africa Region"},
-  ofs:{title:"OFS Metrics",crumb:"Wells and spending \u00B7 East Africa & Horn of Africa Region"},
+  dash:{title:"Dashboard",crumb:"Overview \u00B7 East, Horn & Southern Africa"},
+  map:{title:"Basin Map",crumb:"Basins \u00B7 East, Horn & Southern Africa"},
+  lib:{title:"Data Library",crumb:"Reference data \u00B7 East, Horn & Southern Africa"},
+  notes:{title:"Field Notes",crumb:"Curated E&P news \u00B7 East, Horn & Southern Africa"},
+  ofs:{title:"OFS Metrics",crumb:"Wells and spending \u00B7 East, Horn & Southern Africa"},
   sources:{title:"Data & Sources",crumb:"Provenance and limits \u00B7 every dataset in GeoIndex"},
   fore:{title:"Forecasts",crumb:"Monte Carlo volumetrics"}
 };
@@ -80,7 +95,7 @@ function Sidebar({active,onNav}) {
         <div style={S.brandIcon}>
           <Ico sz={18} c="#34d399"><polygon points="12 2 2 7 12 12 22 7"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></Ico>
         </div>
-        <div><div style={S.brandName}>GeoIndex</div><div style={S.brandTag}>East & Horn of Africa · v0.3</div></div>
+        <div><div style={S.brandName}>GeoIndex</div><div style={S.brandTag}>East & Southern Africa · v0.4</div></div>
       </div>
       <div style={S.navGroup}>MAIN MENU</div>
       {NAV_ITEMS.map(n=>(
@@ -92,7 +107,7 @@ function Sidebar({active,onNav}) {
       ))}
       <div style={{flex:1}}/>
       <div style={S.sideFooter}>
-        <div style={S.footLine}>Sources: USGS · NOCK · TPDC</div>
+        <div style={S.footLine}>Sources: USGS · NOCK · TPDC · PASA</div>
         <div style={S.footLine}>INP · Operator filings · GSE</div>
       </div>
     </nav>
@@ -103,7 +118,7 @@ function Sidebar({active,onNav}) {
 function KPIs({data}) {
   const oil = data.reduce((a,b)=>a+b.estimated_oil_mmbo.p50,0);
   const gas = data.reduce((a,b)=>a+b.estimated_gas_tcf.p50,0);
-  const wells = data.reduce((a,b)=>a+b.wells_drilled,0);
+  const wells = data.reduce((a,b)=>a+(b.wells_drilled||0),0);
   const items = [
     {label:"Basins Indexed",val:data.length,unit:"",color:"#34d399"},
     {label:"Oil P50 Estimate",val:oil.toLocaleString(),unit:"MMBO",color:"#fbbf24"},
@@ -150,7 +165,7 @@ function Table({data,sel,onSel,sig,wl}) {
                   <td style={S.td}><span style={{...S.pill,color:STATUS_CLR[b.status],background:`${STATUS_CLR[b.status]}15`,border:`1px solid ${STATUS_CLR[b.status]}28`}}>{b.status}</span></td>
                   <td style={{...S.td,fontVariantNumeric:"tabular-nums"}}><span style={{color:"#fbbf24",fontWeight:600}}>{b.estimated_oil_mmbo.p50.toLocaleString()}</span><span style={{color:"#475569",fontSize:10,marginLeft:3}}>MMBO</span></td>
                   <td style={{...S.td,fontVariantNumeric:"tabular-nums"}}><span style={{color:"#60a5fa",fontWeight:600}}>{b.estimated_gas_tcf.p50.toLocaleString()}</span><span style={{color:"#475569",fontSize:10,marginLeft:3}}>Tcf</span></td>
-                  <td style={{...S.td,textAlign:"center"}}>{b.wells_drilled}</td>
+                  <td style={{...S.td,textAlign:"center"}}>{b.wells_drilled ?? "\u2014"}</td>
                   <td style={S.td}><SignalBadge basin={b} data={sig}/></td>
                 </tr>
               );
@@ -176,7 +191,7 @@ function Drawer({basin:b,onClose,sig,wl}) {
   if(!b) return null;
   const c=STATUS_CLR[b.status];
   const isViz=viewMode!=="detail";
-  const Bar=({label,p90,p50,p10,unit,accent})=>{const mx=p10*1.15;return(
+  const Bar=({label,p90,p50,p10,unit,accent})=>{const mx=(p10*1.15)||1;return(
     <div style={{marginBottom:18}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
         <span style={{fontSize:11,color:"#64748b"}}>{label}</span>
@@ -222,7 +237,7 @@ function Drawer({basin:b,onClose,sig,wl}) {
           <div style={{height:"calc(100vh - 200px)"}}><BasinViewer3D basin={b}/></div>
         ):(<>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
-          {[{l:"Area",v:`${b.area_km2.toLocaleString()} km\u00B2`},{l:"Depth",v:`${b.depth_m[0]}\u2013${b.depth_m[1]}m`},{l:"Wells",v:b.wells_drilled},{l:"Discovery",v:b.discovery_year||"\u2014"}].map(s=>(
+          {[{l:"Area",v:`${b.area_km2.toLocaleString()} km\u00B2`},{l:"Depth",v:`${b.depth_m[0]}\u2013${b.depth_m[1]}m`},{l:"Wells",v:b.wells_drilled ?? "\u2014"},{l:"Discovery",v:b.discovery_year||"\u2014"}].map(s=>(
             <div key={s.l} style={S.statBox}><div style={{fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:".04em"}}>{s.l}</div><div style={{fontSize:16,fontWeight:700,color:"#e2e8f0",marginTop:2}}>{s.v}</div></div>
           ))}
         </div>

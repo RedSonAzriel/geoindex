@@ -180,7 +180,7 @@ var COLS = [
   { key: "depth", label: "Depth m", num: true, get: function (b) { return b.depth_m[1]; }, show: function (b) { return b.depth_m[0].toLocaleString() + "–" + b.depth_m[1].toLocaleString(); } },
   { key: "oil", label: "Oil P50 MMBO", num: true, get: function (b) { return b.estimated_oil_mmbo.p50; } },
   { key: "gas", label: "Gas P50 Tcf", num: true, get: function (b) { return b.estimated_gas_tcf.p50; } },
-  { key: "wells", label: "Wells", num: true, get: function (b) { return b.wells_drilled; } },
+  { key: "wells", label: "Wells", num: true, get: function (b) { return b.wells_drilled == null ? -1 : b.wells_drilled; }, show: function (b) { return b.wells_drilled == null ? "\u2014" : b.wells_drilled; } },
   { key: "year", label: "Discovery", num: true, get: function (b) { return b.discovery_year || 0; }, show: function (b) { return b.discovery_year || "—"; } },
   { key: "ready", label: "Readiness", num: true, get: function (b) { return readinessScore(b.lat, b.lng).score; } }
 ];

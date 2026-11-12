@@ -16,7 +16,7 @@ var DATASETS = [
     status: "Live",
     live: true,
     where: "Field Notes, basin News badges",
-    origin: "Google News RSS queries for East Africa and Horn of Africa oil and gas, filtered and tagged by country, basin and category, then de-duplicated by headline similarity.",
+    origin: "Google News RSS queries for East, Horn and Southern Africa oil and gas, filtered and tagged by country, basin and category, then de-duplicated by headline similarity.",
     caveat: "Headlines and links only. Tags are keyword-based and can be wrong. Outlet counts reflect only what the feed returned."
   },
   {

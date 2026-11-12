@@ -25,7 +25,11 @@ module.exports = {
     { name: 'Somalia', url: googleNews('Somalia (oil OR gas) (exploration OR licensing OR seismic)') },
     { name: 'Rwanda and Eritrea', url: googleNews('(Rwanda OR Eritrea) (methane OR oil OR gas OR exploration)') },
     { name: 'East Africa', url: googleNews('"East Africa" (oil OR gas) exploration') },
-    { name: 'EACOP', url: googleNews('EACOP pipeline') }
+    { name: 'EACOP', url: googleNews('EACOP pipeline') },
+    { name: 'Namibia', url: googleNews('Namibia (oil OR gas) ("Orange Basin" OR Venus OR Mopane OR offshore OR Kavango OR Walvis)') },
+    { name: 'South Africa', url: googleNews('"South Africa" (Brulpadda OR Luiperd OR Ibhubesi OR "Orange Basin" OR "shale gas" OR Karoo OR PetroSA) (gas OR oil OR exploration)') },
+    { name: 'Madagascar', url: googleNews('Madagascar (oil OR gas) (exploration OR Tsimiroro OR offshore OR Morondava)') },
+    { name: 'Zimbabwe and Botswana', url: googleNews('(Zimbabwe OR Botswana) (gas OR oil) ("Cabora Bassa" OR Mukuyu OR Invictus OR "coal bed methane" OR CBM OR Tlou)') }
   ],
 
   // Items must mention a country keyword AND an energy term to be kept.
@@ -36,7 +40,12 @@ module.exports = {
     ['Ethiopia', ['ethiopia', 'ogaden', 'calub']],
     ['Somalia', ['somalia', 'somaliland', 'puntland']],
     ['Eritrea', ['eritrea']],
-    ['Rwanda', ['rwanda', 'lake kivu', 'kivuwatt']]
+    ['Rwanda', ['rwanda', 'lake kivu', 'kivuwatt']],
+    ['Namibia', ['namibia', 'namcor', 'kavango', 'walvis']],
+    ['South Africa', ['south africa', 'brulpadda', 'luiperd', 'ibhubesi', 'petrosa', 'mossel bay', 'karoo shale']],
+    ['Zimbabwe', ['zimbabwe', 'cabora bassa', 'muzarabani', 'mukuyu']],
+    ['Botswana', ['botswana', 'tlou energy']],
+    ['Madagascar', ['madagascar', 'tsimiroro', 'morondava']]
   ],
 
   energyTerms: [
@@ -63,7 +72,31 @@ module.exports = {
     ['nogal', 'Nogal Basin'],
     ['danakil', 'Danakil Basin'],
     ['albertine', 'Albertine Rift'],
-    ['mozambique channel', 'Mozambique Channel Basin']
+    ['mozambique channel', 'Mozambique Channel Basin'],
+    ['orange basin', 'Orange Basin'],
+    ['venus', 'Orange Basin (Namibia)'],
+    ['pel 83', 'Orange Basin (Namibia)'],
+    ['mopane-', 'Orange Basin (Namibia)'],
+    ['kudu gas', 'Orange Basin (Namibia)'],
+    ['ibhubesi', 'Orange Basin (South Africa)'],
+    ['brulpadda', 'Outeniqua Basin'],
+    ['luiperd', 'Outeniqua Basin'],
+    ['outeniqua', 'Outeniqua Basin'],
+    ['mossel bay', 'Outeniqua Basin'],
+    ['karoo shale', 'Karoo Basin'],
+    ['whitehill', 'Karoo Basin'],
+    ['kavango', 'Kavango Basin'],
+    ['walvis basin', 'Walvis Basin'],
+    ['cabora bassa', 'Cabora Bassa Basin'],
+    ['mukuyu', 'Cabora Bassa Basin'],
+    ['muzarabani', 'Cabora Bassa Basin'],
+    ['lesedi cbm', 'Kalahari Karoo CBM'],
+    ['tlou energy', 'Kalahari Karoo CBM'],
+    ['tsimiroro', 'Morondava Basin'],
+    ['bemolanga', 'Morondava Basin'],
+    ['morondava', 'Morondava Basin'],
+    ['majunga', 'Majunga Basin'],
+    ['mahajanga', 'Majunga Basin']
   ],
 
   // First matching category wins; anything unmatched is "Development".

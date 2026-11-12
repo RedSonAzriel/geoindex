@@ -524,7 +524,7 @@ export default function BasinContourMap(props) {
             <strong style={{ color: "#e2e8f0" }}>{basin.depth_m[0]}–{basin.depth_m[1]}m</strong> depth
           </span>
           <span style={{ fontSize: 11, color: "#64748b" }}>
-            <strong style={{ color: "#e2e8f0" }}>{basin.wells_drilled}</strong> wells
+            <strong style={{ color: "#e2e8f0" }}>{basin.wells_drilled == null ? "\u2014" : basin.wells_drilled}</strong> wells
           </span>
         </div>
       </div>
